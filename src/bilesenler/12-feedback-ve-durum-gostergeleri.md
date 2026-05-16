@@ -8,6 +8,7 @@ Feedback bileşenleri, kullanıcıya uygulamanın o anki durumunu anlatır. Bilg
 - `AlertModal`: kısa karar akışları veya uyarı diyalogları için.
 - `AnnouncementToast`: yeni özellik veya duyuru kartı; lifecycle'ı parent notification sistemi tarafından yönetilir.
 - `CountBadge`, `Indicator`, `ProgressBar`, `CircularProgress`: küçük durum ve ilerleme göstergeleri.
+- `ActivityIndicator`: workspace status alanında LSP, debug, git, filesystem, extension ve formatlama aktivitelerini tek bir kompakt trigger altında toplar.
 
 ## Severity
 
@@ -767,6 +768,33 @@ Dikkat edilecek noktalar:
 - Ring küçük olduğunda, bir label veya tooltip olmadan oranı okumak zorlaşır.
 - `max_value` pozitif bir değer olmalıdır.
 - Aynı ekranda çok sayıda animasyonlu veya sık güncellenen canvas progress kullanılıyorsa, repaint maliyeti hesaba katılır.
+
+## ActivityIndicator
+
+Kaynak:
+
+- Tanım: `../zed/crates/activity_indicator/src/activity_indicator.rs`
+- Export: `activity_indicator::ActivityIndicator`; `ui` crate kökünden re-export edilen genel bir component değildir.
+- Render modeli: `workspace::StatusItemView` olarak workspace status alanına bağlanır.
+
+Ne zaman kullanılır:
+
+- Workspace genelinde devam eden LSP, debug, git, dosya sistemi, extension update veya formatlama hatası gibi aktiviteleri tek bir status trigger'ında göstermek için.
+- Bir aktivite kullanıcı aksiyonu gerektiriyorsa aynı trigger üzerinden click handler veya popover menu vermek için.
+
+Davranış:
+
+- İçerik artık `ActivityIcon` ayrımıyla seçilir: bilinmeyen süreli işler `LoadingSpinner`, statik durumlar ise `Icon(IconName)` taşır.
+- Spinner görünümü doğrudan `Button::loading(true)` üzerinden gelir; bu yüzden loading durumunda start icon yerine `IconName::LoadCircle` çizilir.
+- Warning, download ve benzeri statik durumlarda trigger `Button::start_icon(...)` kullanır ve ikon `Color::Muted` ile çizilir.
+- Language server work listesi trigger'a yalnızca içerikte özel bir click handler yoksa popover olarak bağlanır. Menü en az bir cancellable work varsa açılır; cancellable entry'ler `Close` ikonu ve `Cancel ...` label'ıyla render edilir.
+- Environment error, formatting failure veya extension failure gibi durumlar kendi click handler'larını taşıyorsa language server work menüsü aynı trigger'a eklenmez.
+- Extension install ve remove durumları loading spinner kullanır; extension upgrade ve download durumları download ikonu kullanır.
+
+Dikkat edilecek noktalar:
+
+- `ActivityIndicator`, genel amaçlı bir progress component'i değildir. Bir panel içinde belirli bir iş oranı göstermek için `ProgressBar`, kompakt oran için `CircularProgress`, bilinmeyen süreli yerel loading için `Button::loading(...)` veya `SpinnerLabel` tercih edilir.
+- Popover menüsünde yalnızca iptal edilebilir işler aksiyon üretir. İptal edilemeyen işler tek başına menüyü açtırmaz; bu yüzden kullanıcıya tıklanabilir bir affordance gerekiyorsa ilgili durumun `on_click` callback'i açıkça bağlanmalıdır.
 
 ## Feedback Kompozisyon Örnekleri
 

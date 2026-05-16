@@ -7,6 +7,7 @@ Kaynakta bakılacak ana yerler:
 - `crates/gpui/src/elements/mod.rs`: primitive export kapısı; tüm element ailelerinin toplandığı giriş noktasıdır.
 - `crates/gpui/src/element.rs`: `ParentElement`, `IntoElement`, `Element` trait'lerinin tanımlandığı temel dosya.
 - `crates/gpui/src/styled.rs`: `Styled` ortak stil yüzeyinin yaşadığı yer; bütün element ailesinin ortak stil dilini sağlar.
+- `crates/gpui/src/color.rs`: `Hsla` renk modeli, renk dönüşümleri ve test odaklı proptest yüzeyinin bulunduğu yer.
 - `crates/gpui/src/elements/div.rs`: `Div`, `Interactivity`, `InteractiveElement`, `StatefulInteractiveElement` ve `ScrollHandle` gibi etkileşim çekirdeğini barındırır.
 - `crates/gpui/src/elements/{canvas,img,image_cache,svg,anchored,deferred,surface,text,list,uniform_list,animation}.rs`: her bir özel primitive'in kendi dosyası; özel API'lerin tanım yerleridir.
 
@@ -170,6 +171,10 @@ Aşağıdaki tablo her primitive'in nasıl üretildiğini, hangi özel metodlara
 | `InteractiveText` | `InteractiveText::new(id, styled_text)` | `.on_click(range, listener)`, `.on_hover(range, listener)`, `.tooltip(range, builder)`; `InteractiveTextState` | Inline link, mention veya span tooltip için kullanılır |
 | `Animation` | `Animation::new(duration)` | `.repeat()`, `.with_easing(easing)` | Animasyon token'ları tek yerde üretilir; sonsuz animasyon ise bilinçli olarak seçilir |
 | `AnimationExt` / `AnimationElement` | `.with_animation(id, animation, animator)`, `.with_animations(id, animations, animator)` | `AnimationElement::map_element(f)` | Elementi saran bir wrapper'dır; stabil bir `ElementId` verilmesi zorunludur |
+
+`ListState` scrollbar drag sözleşmesi özellikle değişken yükseklikli listelerde önemlidir. `scrollbar_drag_started()` ile `scrollbar_drag_ended()` arasında `is_scrollbar_dragging()` true döner. `set_offset_from_scrollbar(point)` pozitif "baştan mesafe" almaz; `scroll_px_offset_for_scrollbar()` ile aynı koordinat modelini kullanır ve içerik aşağı kaydıkça `point.y` negatif olur. Bu yüzden scrollbar'ı 150px aşağı taşımak için `point(px(0.), px(-150.))` verilir. İçerik drag sırasında büyürse drag başlangıcındaki içerik yüksekliği baz alınır; kullanıcı frozen track'in sonuna sürüklediğinde `FollowMode::Tail` yeniden takip eder.
+
+`Hsla` için `proptest` feature'ı açıkken iki test yardımcısı görünür: `Hsla::opaque_strategy()` alpha değeri `1.0` olan renkler üretir, `Arbitrary for Hsla` ise alpha dahil tüm bileşenleri `0.0..=1.0` aralığında üretir. Bu yüzey üretim UI kodundan çok renk algoritmaları ve tema kontrastı property testleri için kullanılır.
 
 ## GPUI public enum ve state ayrıntıları
 

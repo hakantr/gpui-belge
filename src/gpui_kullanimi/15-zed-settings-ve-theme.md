@@ -43,6 +43,7 @@ Agent ayar içeriğinde `agent.default_model` yanında `agent.subagent_model: Op
 - Agent tool permission varsayılanlarında `skill` aracı yer alır. Settings UI'daki tool permission sayfasında bu araç için regex açıklaması skill'in mutlak `SKILL.md` path'i üzerinden yapılır.
 - Amazon Bedrock language model ayarlarında `guardrail_identifier` ve `guardrail_version` alanları vardır; version belirtilmediğinde provider tarafında `"DRAFT"` yedeği beklenir.
 - `git.path_style` yanında Git UI ve diff görünümü için yeni `git` ayarları okunurken çalışma zamanı `ProjectSettings` modelinin `settings_content` ile senkron tutulduğu kontrol edilmelidir; varsayılan JSON'a eklenmeyen alan `from_settings` içinde beklenmedik bir default'a düşer.
+- Settings UI aramasında sorgu boşken sonuç üretilmez ve sorgudaki kelimelerin tamamının aday setting ile eşleşmesi gerekir. Kendi settings panelinizde Zed davranışına paralel kalmak için kelimelerden herhangi birinin eşleşmesini yeterli sayan eski arama mantığını kullanmayın.
 
 **Completion menu API yüzeyi.** Completion akışında dikkat edilecek iki nokta vardır:
 

@@ -42,26 +42,29 @@ Son bölüm, önceki adımlarda alınan kararları hata sınıflarına göre hı
 18. **`.id()` çağrısının atlanması.** Interactivity stateful'dur; ID olmadan hover/active çalışmaz ve sessiz bir başarısızlık ortaya çıkar. → Konu 42.
 19. **`element_selected` ile `element_selection_background` karıştırılması.** İlki liste öğesi seçimini, ikincisi metin highlight'ını temsil eder. → Konu 42.
 20. **Ghost ile element grubunun karıştırılması.** Toolbar'da `element_*` kullanıldığında yüzey rengiyle dolar ve tasarım dili kayar. → Konu 42.
+21. **Mermaid kaynağında tema dışı stil taşımak.** `%%{init}%%`, elle `classDef` veya rastgele hex renkler aktif tema ile çakışır. Vurgu için `accent0..accent7` kullanılmalı; cache tema/settings değişiminde invalid edilmelidir. → Konu 41.
+22. **Completion rozet ayarını tema ayarı sanmak.** `completion_menu_item_kind` `EditorSettingsContent` alanıdır; `ThemeSettingsContent` veya provider trait'ine eklenmez. Renk tüketimi syntax theme üstünden yapılır. → Konu 39, 41.
+23. **Markdown preview metin fontu ile code fontunu birleştirmek.** Düz preview metni `markdown_preview_font_family`, inline code ve code block ise `markdown_preview_code_font_family` kullanır. İki alanın fallback hedefleri farklıdır. → Konu 39, 41.
 
 ### Bundling / lisans (Bölüm VI)
 
-21. **`palette` sürümünün Zed'le aynı tutulmaması.** Renk dönüşümü kayar; fixture testleri kırılır. → Konu 5, 21.
-22. **`refineable` dep'inin fork'lanmadan production'a alınması.** `publish = false` ayarı crates.io yayını engeller; vendor veya fork şarttır. → Konu 3, 26.
-23. **Zed `default_colors.rs` HSL değerlerinin birebir kopyalanması.** GPL-3 ihlalidir. Bağımsız anchor değerleri seçilmelidir. → Konu 3, 25.
-24. **Lisans dosyasını "sonradan eklerim" demek.** Bundled tema'ya atıf eklenmediğinde telif ihlali oluşur. → Konu 27.
-25. **GPL lisanslı fixture'ın alınması.** Tema JSON'undaki HSL değerleri bile telif kapsamına girer; yalnızca MIT/Apache gibi uyumlu lisanslı temalar fixture'a alınır. → Konu 27.
+24. **`palette` sürümünün Zed'le aynı tutulmaması.** Renk dönüşümü kayar; fixture testleri kırılır. → Konu 5, 21.
+25. **`refineable` dep'inin fork'lanmadan production'a alınması.** `publish = false` ayarı crates.io yayını engeller; vendor veya fork şarttır. → Konu 3, 26.
+26. **Zed `default_colors.rs` HSL değerlerinin birebir kopyalanması.** GPL-3 ihlalidir. Bağımsız anchor değerleri seçilmelidir. → Konu 3, 25.
+27. **Lisans dosyasını "sonradan eklerim" demek.** Bundled tema'ya atıf eklenmediğinde telif ihlali oluşur. → Konu 27.
+28. **GPL lisanslı fixture'ın alınması.** Tema JSON'undaki HSL değerleri bile telif kapsamına girer; yalnızca MIT/Apache gibi uyumlu lisanslı temalar fixture'a alınır. → Konu 27.
 
 ### Test (Bölüm VI ve XI)
 
-26. **`#[gpui::test]` `cx.update` içinde init yapmamak.** Test başında `kvs_tema::init(cx)` veya `init_test(cx)` çağrısı gerekir. → Konu 44.
-27. **Hsla'nın `assert_eq!` ile karşılaştırılması.** Float eşitliği yanıltıcıdır; epsilon karşılaştırması tercih edilir. → Konu 28.
-28. **`feature = "test-util"`'ın production'da açık bırakılması.** `#[cfg(any(test, feature = "test-util"))]` koşulu kurulur; release build'inde kapatılmalıdır. → Konu 44.
+29. **`#[gpui::test]` `cx.update` içinde init yapmamak.** Test başında `kvs_tema::init(cx)` veya `init_test(cx)` çağrısı gerekir. → Konu 44.
+30. **Hsla'nın `assert_eq!` ile karşılaştırılması.** Float eşitliği yanıltıcıdır; epsilon karşılaştırması tercih edilir. → Konu 28.
+31. **`feature = "test-util"`'ın production'da açık bırakılması.** `#[cfg(any(test, feature = "test-util"))]` koşulu kurulur; release build'inde kapatılmalıdır. → Konu 44.
 
 ### API yüzeyi (Bölüm XI)
 
-29. **`refinement.rs` modülünün public yapılması.** `pub use crate::refinement::*` sözleşmeyi sızdırır. `pub(crate) mod refinement;` zorunludur. → Konu 43.
-30. **`schema::*` glob ile public ihraç.** Yeni iç tip otomatik olarak public hale gelir. Tek tek `pub use` yazılmalıdır. → Konu 43.
-31. **`Theme.styles` alanının doğrudan public olması.** İç düzen sızıntısına yol açar; accessor metotlarının (`theme.colors()`) tercih edilmesi gerekir. → Konu 12, 41.
+32. **`refinement.rs` modülünün public yapılması.** `pub use crate::refinement::*` sözleşmeyi sızdırır. `pub(crate) mod refinement;` zorunludur. → Konu 43.
+33. **`schema::*` glob ile public ihraç.** Yeni iç tip otomatik olarak public hale gelir. Tek tek `pub use` yazılmalıdır. → Konu 43.
+34. **`Theme.styles` alanının doğrudan public olması.** İç düzen sızıntısına yol açar; accessor metotlarının (`theme.colors()`) tercih edilmesi gerekir. → Konu 12, 41.
 
 ### Özet karar matrisi
 

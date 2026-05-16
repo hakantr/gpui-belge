@@ -375,6 +375,38 @@ Dikkat edilecek noktalar:
 - Accept ve dismiss button'larının callback'leri parent notification view'ında bağlanmalıdır.
 - Uzun kullanıcı veya proje adlarında, child label'lara bir truncate davranışının eklenmesi gerekir; aksi halde satır taşabilir.
 
+## Agent Skills UI
+
+Kaynak:
+
+- Completion ve mention: `../zed/crates/agent_ui/src/completion_provider.rs`, `../zed/crates/acp_thread/src/mention.rs`.
+- Thread banner'ları: `../zed/crates/agent_ui/src/conversation_view/thread_view.rs`.
+- Migration modal: `../zed/crates/agent_ui/src/ui/rules_to_skills_modal.rs`.
+- Title bar duyurusu: `../zed/crates/title_bar/src/onboarding_banner.rs`, `../zed/crates/title_bar/src/title_bar.rs`.
+
+Ne zaman kullanılır:
+
+- Agent input içinde `/skill-name` veya `@` mention üzerinden bir `SKILL.md` dosyasını prompt bağlamına eklemek için.
+- Skill load hatalarını conversation içinde kullanıcıya gösterip dosyaya doğrudan açılabilir bir aksiyon sunmak için.
+- Title bar'daki "Introducing: Skills" duyurusundan kısa bir açıklama veya migration özeti modalı açmak için.
+
+Davranış:
+
+- Prompt context tipi `skill` olarak geçer ve UI label'ı `Skills`, ikonu `IconName::Sparkle` olur.
+- Slash autocomplete açıldığında provider önce delegate'e `slash_autocomplete_invoked(...)` bildirir; native agent bunu global ve proje-local skills taramasını başlatmak için kullanır.
+- Slash listesinde Skills, Agent Commands grubundan önce sıralanır. Skill completion label'ında ad ve scope/source birlikte gösterilir; documentation alanında skill description yer alır.
+- Skill seçildiğinde metne `MentionUri::Skill` link'i eklenir. Link veya mention açıldığında ilgili `SKILL.md` dosyası workspace içinde absolute path ile açılır.
+- `SkillLoadingErrorsUpdated` event'leri thread view'da warning `Callout` olarak render edilir. Her callout `Open File` butonu ve dismiss icon button'ı taşır; dosya düzeltildiğinde veya kaldırıldığında dismiss kaydı da temizlenir.
+- `RulesToSkillsModal`, `AlertModal` tabanlıdır; boş migration sonucunda "Introducing Skills", migration sonucu varsa "Skills have replaced Rules" başlığını kullanır. Footer'daki `Got it` butonu `menu::Confirm` keybinding'iyle bağlanır.
+- Title bar onboarding banner'ı feature flag açıkken görünür, statik olarak "Introducing: Skills" / "Skills" metnini ve `Sparkle` ikonunu kullanır; migration'a özel detay modal içinde gösterilir.
+- Tool permissions setup sayfasında `skill` aracı ayrı bir satırdır. Regex pattern'leri skill adıyla değil, skill'in `SKILL.md` dosyasının absolute path'iyle eşleşir.
+
+Dikkat edilecek noktalar:
+
+- Skill gövdesi component state'ine kopyalanmaz; UI catalog metadata'sını, dosya yolunu ve yükleme hatalarını gösterir. Gövde, ihtiyaç anında skill tool tarafından okunur.
+- Project-local skill ile global skill aynı adı kullanıyorsa, kullanıcı arayüzünde scope/source gösterilmelidir; aksi halde slash completion'da hangi skill'in seçildiği belirsizleşir.
+- Skill load hataları dismiss edilebilir ama bu kalıcı bir suppress değildir. Alttaki dosya düzelip sonra yeniden bozulursa hata tekrar gösterilir.
+
 ## UpdateButton
 
 Kaynak:

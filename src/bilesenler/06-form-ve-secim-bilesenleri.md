@@ -368,6 +368,27 @@ Dikkat edilecek noktalar:
 - `ERASED_EDITOR_FACTORY` kurulmadan `InputField::new` çağrılırsa panic oluşur; bu yüzden editor crate'inin init fonksiyonunun uygulama başlangıcında çalıştığından emin olmak gerekir.
 - `label_min_width(...)` adı tarihsel olarak "label" ifadesini taşısa da, kaynakta bu metod input container'ın `min_width` değerini ayarlar.
 
+## Settings UI Form Yüzeyi
+
+Kaynak:
+
+- Sayfa verisi: `../zed/crates/settings_ui/src/page_data.rs`.
+- Renderer kayıtları: `../zed/crates/settings_ui/src/settings_ui.rs`.
+- Tool permission setup: `../zed/crates/settings_ui/src/pages/tool_permissions_setup.rs`.
+
+Davranış:
+
+- `settings_ui::init_renderers(...)`, `settings::CompletionMenuItemKind` için dropdown renderer kaydeder. Bu ayar `editor.completion_menu_item_kind` JSON path'iyle görünür; değerler `off` ve `symbol` olur.
+- Settings sayfasındaki "Completion Menu Item Kind" satırı, completions menüsünde LSP item kind bilgisinin gösterilip gösterilmeyeceğini seçtirir. `off` item kind'i gizler, `symbol` syntax theme ile renklendirilmiş tek harfli badge gösterir.
+- Version Control / Git Hunks bölümünde "Show Stage/Restore Buttons" satırı `git.show_stage_restore_buttons` boolean ayarını yazar. Bu değer false olduğunda diff hunk üstündeki Stage/Unstage ve Restore butonları render edilmez.
+- Tool Permissions setup listesindeki `skill` aracı "Loading agent skill instructions" açıklamasıyla gelir. Regex açıklaması skill adına değil, skill'in `SKILL.md` dosyasının absolute path'ine göre eşleştiğini belirtir.
+- Settings araması boş query'de sonuç döndürmez. Query birden fazla kelime içerdiğinde sonuç, query kelimelerinin tamamının ilgili dokümandaki bir sözcük prefix'iyle eşleşmesini bekler.
+
+Dikkat edilecek noktalar:
+
+- Yeni enum tabanlı ayarlar için yalnızca `SettingItem` eklemek yetmez; ilgili enum'un `init_renderers(...)` içinde uygun renderer'a kaydedilmesi gerekir.
+- Git hunk butonları ayarla kapatıldığında aynı aksiyonu geriye uyumluluk amaçlı ikinci bir button ile geri eklemeyin. Kullanıcıya görünür yüzey ayar değerini doğrudan izlemelidir.
+
 ## Form Kompozisyon Örnekleri
 
 Bir ayar satırı için tipik kompozisyon, `SwitchField`'ın etrafına bir `v_flex` koymak ve gerekirse birden fazla benzer satırı bu kolonda alt alta dizmektir. Aşağıdaki örnek tek bir satır gösterir:

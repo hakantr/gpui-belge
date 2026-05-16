@@ -321,6 +321,7 @@ let result = KeymapFile::load(&contents, cx);
 - Git paneli iki tab'lıdır: `git_panel::ActivateChangesTab` ve `git_panel::ActivateHistoryTab` için varsayılan binding macOS'ta `cmd-1` ile `cmd-2`, Linux/Windows'ta `ctrl-1` ile `ctrl-2`'dir.
 - Worktree picker `worktree_picker::ForceDeleteWorktree` action'ını destekler. Varsayılan binding macOS'ta `cmd-alt-shift-backspace`, Linux/Windows'ta `ctrl-alt-shift-backspace`'tir; UI tarafında delete ikonunun üzerinde `alt` basılıysa force delete yolu çalışır.
 - `buffer_search::UseSelectionForFind` seçimi, seçim yoksa cursor altındaki kelimeyi arama sorgusu olarak kullanır. Ayarın bypass edilmesi gereken çağrılar `SeedQuerySetting::Always` override'ı vermelidir.
+- Vim kullanırken Helix tarzında kelimeye atlama `vim::HelixJumpToWord` aksiyonudur. Varsayılan key binding verilmez; kullanıcı normal/visual mod bağlamında örneğin `"g w"` bağlayabilir. Normal modda hedef kelimenin başına taşır, visual modda seçimi hedef kelime başına kadar genişletir. Vim'in varsayılan `g w` rewrap davranışını korumak isteyenler bu binding'i eklememelidir.
 
 **Validator.** Belirli action tiplerine özel doğrulama mantığı eklenebilir:
 

@@ -745,6 +745,8 @@ Bu alanların yardımcı tipleri de şemaya dahildir:
 
 `agent_ui_font_size` ve `agent_buffer_font_size` provider trait'inde yer almaz; agent panel ayarı olarak settings katmanında kalır. `theme`, `icon_theme`, `markdown_preview_theme`, `experimental.theme_overrides` ve `theme_overrides` selector ve override akışına gider; typography helper'ları ise provider üzerinden `ui_font`, `buffer_font`, `ui_font_size`, `buffer_font_size` ve `ui_density` değerlerini okur. `markdown_preview_code_font_family` provider trait'ine eklenmez; markdown preview tüketicisi `ThemeSettings` üzerinden okur ve değer boş kaldığında `buffer_font.family` kullanır.
 
+Tema renklerini tüketen her ayar `ThemeSettingsContent` içine girmez. `completion_menu_item_kind` bunun yeni örneğidir: schema sahibi `EditorSettingsContent`'tir, değerleri `off` ve `symbol` olur, default `off`'tur. `symbol` açıldığında completion menüsü aktif syntax theme'den capture rengi okur; bu yüzden tema dokümantasyonunda ele alınır, ama `ThemeSettingsProvider` veya `ThemeSettingsContent` sözleşmesine eklenmez. Eski ad, alias veya geriye uyumluluk katmanı tanımlanmaz.
+
 ### Font ayarları runtime API'leri (`adjust_*`, `reset_*`, override global'leri)
 
 **Kaynak modüller:** `crates/theme_settings/src/settings.rs` ve `crates/theme_settings/src/theme_settings.rs`.

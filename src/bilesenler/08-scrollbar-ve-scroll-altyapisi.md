@@ -38,6 +38,8 @@ Davranış:
 - `tracked_scroll_handle(...)` ile harici bir `ScrollableHandle` (örneğin bir `ScrollHandle` veya `UniformListScrollHandle`) bağlanır; scrollbar bu handle üzerinden okuma ve yazma yapar.
 - `Table::interactable(...)` ile `TableInteractionState::with_custom_scrollbar(...)` birlikte kullanıldığında `Scrollbars`, tablonun yatay ve dikey scroll handle'larına bağlanır; yani tablo kendi scroll davranışını dış bir scrollbar üzerinden sürer.
 - `ScrollbarStyle::Editor`, editor görseliyle gelen scrollbar genişliğinde çizim yapar; panel ve listelerde ise `Regular` daha uygundur.
+- `ListState` tabanlı variable-height listelerde scrollbar drag state'i `scrollbar_drag_started()`, `scrollbar_drag_ended()` ve `is_scrollbar_dragging()` ile izlenir. `set_offset_from_scrollbar(point)` çağrısında aşağı yöndeki scroll negatif `y` offset'iyle temsil edilir; `point(px(0.), px(-150.))` içeriğin 150px aşağı kaydırıldığı durumu ifade eder.
+- Drag sırasında liste içeriği büyürse scrollbar konumu drag başlangıcındaki içerik yüksekliğine göre korunur. Kullanıcı drag'i frozen track'in sonuna getirirse tail-follow yeniden etkinleşir; bu özellikle log, terminal ve agent conversation gibi sona akması gereken listelerde elle scroll ile otomatik takip arasındaki ayrımı korur.
 
 Örnek:
 
@@ -76,3 +78,4 @@ Dikkat edilecek noktalar:
 - Tek bir scroll container'a doğrudan bağlanılıyorsa `WithScrollbar` helper'larını kullanmak, ayrı bir `Scrollbars` child'ı yazmaya göre hem daha kısa hem de daha az hataya açıktır.
 - `with_stable_track_along(...)`, scroll alanı henüz yokken bile track için yer ayırır. Bu sayede scrollbar görünür ya da gizli olarak değiştiğinde layout aniden zıplamaz; sahne stabil kalır.
 - Birden fazla scroll alanı bulunuyorsa, her birine `.id(...)` üzerinden benzersiz bir id verilmesi gerekir; aksi halde GPUI scroll state'leri karıştırabilir.
+- `set_offset_from_scrollbar(...)` için pozitif offset kullanımı güncel sözleşmeye uymaz. Scrollbar handle yazarken `offset()` ve `set_offset(...)` değerlerinin aynı işaret yönünü kullandığından emin olunmalıdır.

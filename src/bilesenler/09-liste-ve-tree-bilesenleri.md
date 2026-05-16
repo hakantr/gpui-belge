@@ -286,7 +286,7 @@ fn render_pinned_sub_header() -> impl IntoElement {
 Zed içinden kullanım örnekleri:
 
 - `../zed/crates/component_preview/src/component_preview.rs`: preview navigation section başlıkları.
-- `../zed/crates/rules_library/src/rules_library.rs`: rules library bölüm başlıkları.
+- `../zed/crates/editor/src/completions.rs`: completion menu group header'ları.
 - `../zed/crates/agent_ui/src/threads_archive_view.rs`: archive view alt bölümleri.
 
 Dikkat edilecek noktalar:

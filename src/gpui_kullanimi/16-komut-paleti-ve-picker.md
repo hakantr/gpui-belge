@@ -171,4 +171,8 @@ pub trait PickerDelegate: Sized + 'static {
 
 **`PickerPopoverMenu`.** Bu sarmal, bir picker'ı `ui::PopoverMenu` içine yerleştiren ince bir yapıdır. `new(picker, trigger, tooltip, anchor, cx)` picker'ın `DismissEvent`'ini popover dismiss event'ine bağlar; `with_handle(...)` ve `offset(...)` ile dış popover handle ve konum ayarı yapılır. Picker bir toolbar butonu veya popover tetikleyicisi arkasında açılacaksa doğrudan modal yerine bu sarmal tercih edilir.
 
+**Zed picker örneklerinde güncel kullanım notları.** `file_finder` artık `path:line-column` sorgularına ek olarak `path:start-end` satır aralıklarını da anlar. Örneğin `src/app.rs:12-20` dosyayı açıp ilgili satır aralığını seçer; aralık dosya sonunu aşarsa EOF'a kırpılır. Geçersiz veya ters aralıklar `PathWithPosition` davranışına düşer ve tek konuma gider. Sonda kalan tek satır iki noktası `path:12:` biçiminde temizlenir, fakat aralık biçimleri korunur.
+
+Git branch picker tarafında `git_ui::branch_picker::select_popover(...)` checkout yapmayan seçim popover'ı üretir. Bu mod `BranchSelectionBehavior::Select` kullanır, placeholder olarak `Select branch...` gösterir, footer ve delete aksiyonlarını sunmaz, seçimden sonra `DismissEvent` yayar ve verilen `SelectBranchCallback` ile seçilen `Branch` değerini dışarı taşır. Branch sıralama seçili branch'i, aktif remote üzerindeki branch'leri, aktif/upstream bağlamını ve kalanları önceliklendirir; aynı öncelikte local branch'ler remote branch'lerden önce gelir.
+
 ---

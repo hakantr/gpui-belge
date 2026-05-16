@@ -73,7 +73,7 @@ Davranış:
 - `.row(...)` yalnızca tablo sabit satır modundayken satır ekler. Tablo `.uniform_list(...)` veya `.variable_row_height_list(...)` ile kurulduysa satırlar bir closure üzerinden üretilir.
 - `.map_row(...)`, tablonun ürettiği `Stateful<Div>` satır container'ını alır. Bu sayede seçili satır, hover state'i, sağ tık veya özel click davranışı gibi ek davranışlar eklemek mümkün hale gelir.
 - `.pin_cols(n)`, ilk `n` kolonu yatay scroll sırasında görünür tutar. Kaynakta yalnızca `ColumnWidthConfig::Resizable` ile desteklenir; `n == 0` veya `n >= cols` durumunda tablo tek bölümlü normal bir layout'a döner.
-- Pinned layout'ta header, satırlar ve resize overlay aynı yatay `ScrollHandle`'ı izler. Bu nedenle `.pin_cols(...)` kullanılırken tablonun `.interactable(...)` ile bağlanması pratikte zorunlu hâle gelir.
+- Pinned layout'ta header, satırlar ve resize overlay aynı yatay `ScrollHandle`'ı izler. Pinned kolonlar, scrollable kolonlarla aynı list item içinde render edildiği için değişken yükseklikli satırlarda iki tarafın yüksekliği ayrışmaz. Bu nedenle `.pin_cols(...)` kullanılırken tablonun `.interactable(...)` ile bağlanması pratikte zorunlu hâle gelir.
 
 Minimum örnek:
 
@@ -355,6 +355,7 @@ Dikkat edilecek noktalar:
 - `explicit(widths)` içinde `widths.len()` ile tablo kolon sayısının birbirine eşit olması gerekir.
 - `Resizable` için associated bir constructor yoktur; enum variant'ı doğrudan `ColumnWidthConfig::Resizable(entity)` biçiminde kullanılır.
 - `Table::pin_cols(n)` yalnızca `ColumnWidthConfig::Resizable(entity)` ile anlamlıdır. `Auto`, `Explicit` ve `Redistributable` modlarında pinned split layout devreye girmez.
+- Pinned layout'ta pinned bölümün resize divider'ları yalnızca görsel çizgi olarak render edilir; drag etkileşimi scrollable bölümün divider'larında kalır. Header hücresine çift tıklama ile kolon reset davranışı ise `HeaderResizeInfo` üzerinden çalışmaya devam eder.
 
 ## RedistributableColumnsState
 
@@ -546,7 +547,7 @@ Dikkat edilecek noktalar:
 - Bu model yatay scroll üretebilir; bu yüzden tablonun `.interactable(...)` ile bağlanması gerekir.
 - Kolon sayısı değişirse, eski state'i güncellemek yerine yeni bir `ResizableColumnsState` oluşturmak çok daha net bir tercih olur.
 - `set_column_configuration(...)`, runtime'da tek bir kolonun başlangıç ve mevcut genişliğini birlikte günceller.
-- İlk kolonun row number veya seçim sütunu gibi her zaman görünür kalması gerekiyorsa, `ColumnWidthConfig::Resizable(entity)` ile birlikte `Table::pin_cols(n)` kullanılır. Zed CSV preview ilk kolonu bu şekilde sabitler.
+- İlk kolonun row number veya seçim sütunu gibi her zaman görünür kalması gerekiyorsa, `ColumnWidthConfig::Resizable(entity)` ile birlikte `Table::pin_cols(n)` kullanılır. Zed CSV preview ilk kolonu bu şekilde sabitler. Kullanıcı pinned bölümdeki divider'ı sürükleyemez; boyut değiştirme ihtiyacı scrollable kolonlarda beklenir veya kolon konfigürasyonu state üzerinden güncellenir.
 
 ## TableRow ve UncheckedTableRow
 
@@ -683,7 +684,7 @@ Dikkat edilecek noktalar:
 - `render_redistributable_columns_resize_handles(...)`, kolon state'inden divider'ları üretir; container'ın `relative()` olması handle yerleşimini çok daha öngörülebilir hâle getirir.
 - `render_table_header(...)` içinde çift tıklama ile kolon reset davranışı `HeaderResizeInfo` üzerinden bağlanır.
 - Header ve row için aynı `TableRenderContext` genişlik modelinin kullanılması gerekir; aksi halde hücreler hizalanmaz.
-- Pinned kolonlu özel bir render akışı kuruluyorsa, `TableRenderContext.pinned_cols` ile `TableRenderContext.h_scroll_handle` birlikte ayarlanmalıdır. Normal `Table::pin_cols(...)` kullanımı bu iki alanı kendi içinde zaten doldurur.
+- Pinned kolonlu özel bir render akışı kuruluyorsa, `TableRenderContext.pinned_cols` ile `TableRenderContext.h_scroll_handle` birlikte ayarlanmalıdır. Normal `Table::pin_cols(...)` kullanımı bu iki alanı kendi içinde zaten doldurur. Scrollable satır ve header bölümleri `overflow_x_scroll()` ile aynı handle'ı takip eder; ayrıca resize drag koordinatı bu yatay offset'e göre düzeltilir.
 
 ## Veri Tablosu Kompozisyon Örnekleri
 

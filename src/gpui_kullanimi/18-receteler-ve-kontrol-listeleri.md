@@ -139,6 +139,8 @@ Git Graph commit context menu'sünden özel bir task çalıştırmak için globa
 
 Desteklenen Git değişkenleri şu şekildedir:
 
+Bu bağlamda yalnız Git değişkenleri sağlanır. `ZED_FILE`, `ZED_SELECTED_TEXT`, `ZED_WORKTREE_ROOT`, `ZED_MAIN_GIT_WORKTREE` gibi editor/worktree değişkenleri varsayılan değer taşımadıkça çözümlenmez.
+
 - `ZED_GIT_SHA`
 - `ZED_GIT_SHA_SHORT`
 - `ZED_GIT_REPOSITORY_NAME`

@@ -54,6 +54,8 @@ pub struct Rgba { pub r: f32, pub g: f32, pub b: f32, pub a: f32 }
 - `color.to_rgb() -> Rgba` — Hsla'dan Rgba'ya çevirir.
 - `color.is_transparent()`, `color.is_opaque()` — alpha kontrolü için.
 
+**Test feature yüzeyi:** `gpui` `proptest` feature'ı ile derlendiğinde `Hsla` için iki ek test API'si gelir. `any::<Hsla>()` tüm kanalları (`h`, `s`, `l`, `a`) `0.0..=1.0` aralığında üretir. `Hsla::opaque_strategy()` ise yalnızca opak renk üretir (`a = 1.0`) ve kontrast, luminance veya tema türetme property testlerinde alpha belirsizliğini ortadan kaldırır. Bu API production sözleşmesi değildir; test/dev feature altında tutulmalıdır.
+
 **Renk parse boru hattı (`try_parse_color`):**
 
 ```rust

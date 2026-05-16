@@ -16,6 +16,8 @@ Aşağıdaki tablo, üst barda en sık değiştirilen davranışların hangi dos
 | Native tabs kapatılmalı | `SystemWindowTabs` render child'ı feature flag ile boş döndürülür; controller kaldırılmaz, böylece ihtiyaç doğduğunda etkinleştirmek kolaydır. |
 | Sekme plus butonu yeni pencere açmalı | `zed_actions::OpenRecent` yerine uygulamanın kendi `NewWindow` action'ı dispatch edilir. |
 | Sidebar açıkken kontroller gizlenmemeli | `sidebar_render_state` ve `show_left/right_controls` koşulları değiştirilir. |
+| Product duyuru banner'ı gösterilmeli | `AppTitleBar` içinde `OnboardingBanner` muadili bir child kurulur; görünürlük feature flag/ayar predicate'inden gelir, platform kabuğuna taşınmaz. |
+| Update tooltip'i değişmeli | `UpdateVersion` muadili bileşendeki tooltip üreticisi güncellenir; eski `Version:` ve kısa SHA biçimi korunmaz. |
 | Sağ tık window menu kapatılmalı | Linux CSD'deki `window.show_window_menu(ev.position)` bağı kaldırılır veya bir ayara bağlanır. |
 | Çift tıklama maximize yerine farklı bir action olmalı | Platform click handler'ları ürünün kendi action'ına yönlendirilir; macOS sistem davranışına bilinçli olarak müdahale edildiği unutulmaz. |
 
@@ -32,6 +34,10 @@ Aşağıdaki listeler, üst bar entegrasyonu tamamlandıktan sonra hızlıca gö
 - Titlebar child'ları her render geçişinde `set_children(...)` ile yenileniyor mu doğrulanır.
 - Titlebar üzerindeki interaktif child'lar drag propagation'ı ile çakışıyor mu test edilir; bir buton tıklamasının pencereyi sürüklemediğinden emin olunur.
 - Tema token'ları aktif, pasif ve hover durumlarının hepsini kapsıyor mu kontrol edilir; eksik bir token render'da bariz görsel boşluklar bırakır.
+- Ürün banner'ları `PlatformTitleBar` içine gömülmeden, `AppTitleBar` child grubu olarak kuruluyor mu kontrol edilir.
+- Feature flag'e bağlı banner'ların başlangıçta tek sefer hesaplanmadığı, render sırasında güncel predicate ile gizlenip gösterildiği doğrulanır.
+- Update tooltip'i semantic version için de SHA için de `Update to Version:` biçimini kullanıyor mu kontrol edilir; SHA kısaltma fallback'i bırakılmaz.
+- Mevcut pencereye/sidebar'a proje açan `Activate` akışı pencereyi öne alıyor ve titlebar state'ini güncelliyor mu test edilir.
 
 ### Linux/FreeBSD
 
@@ -75,3 +81,5 @@ Aşağıdaki liste, üst bar port edilirken en sık karşılaşılan yanlışlar
 - `DraggedWindowTab` payload'ının yalnız bir alan listesi olarak mirror edilmesi. Aynı tab bar üzerinde yapılan drop sekmenin yerini değiştirir. Tab bar dışına bırakma sekmeyi yeni pencereye taşır. Merge ise ayrı bir action ve context menu akışıdır. Bu üç dal farkı yok sayılırsa drag/drop davranışı hatalı çalışır.
 - `SystemWindowTabController` state'inin platform native tab state'iyle aynı kaynak sanılması. Controller, Zed tarafındaki UI ve action modelidir; gerçek platform çağrıları (`window.move_tab_to_new_window`, `window.merge_all_windows`) ayrıca yapılır. İki tarafın senkron tutulması ihmal edilirse görüntü ile sistem davranışı farklı düşer.
 - Uygulamaya özgü menülerin doğrudan `PlatformTitleBar` içine gömülmesi. Daha temiz model, platform kabuğunu ayrı ve ürün titlebar içeriğini ayrı tutmaktır. Bu ayrım bozulduğunda port edilen bileşen ürünün lehçesine kilitlenir ve başka projede yeniden kullanılamaz hale gelir.
+- Skills gibi ürün duyurularının platform kabuğuna taşınması. Bu banner'lar feature flag, migration modalı ve ürün metniyle ilgilidir; doğru yerleri `AppTitleBar` katmanıdır.
+- Update tooltip'inde eski `Version:` veya kısa SHA biçimini korumak. Yeni Zed davranışı tam SHA ve `Update to Version:` öneki kullanır; portta eski biçim için ayrı uyumluluk yolu açılırsa davranış gereksiz yere çatallanır.

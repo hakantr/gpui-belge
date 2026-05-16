@@ -217,11 +217,41 @@ Markdown preview hattı, tema tüketicisi olarak şu alanları kullanır:
 
 - Düz markdown metni preview modunda `markdown_preview_font_family()` ile okunur; bu alan set edilmemişse `ui_font.family` kullanılır.
 - Inline code ve code block'lar yeni `markdown_preview_code_font_family()` accessor'ını kullanır; set edilmediğinde `buffer_font.family` değerine düşer. Bu nedenle settings mirror'ında `markdown_preview_font_family` ile `markdown_preview_code_font_family` ayrı alanlar olarak tutulur.
-- Mermaid render hattı artık aktif tema renklerinden kendi renderer temasını üretir: `editor_background`, `surface_background`, `element_background`, `ghost_element_hover`, `panel_background`, `text`, `border`, `border_variant`, `accents()` ve `players()` birlikte kullanılır.
+- Mermaid render hattı artık aktif tema renklerinden kendi renderer temasını üretir: `editor_background`, `surface_background`, `element_background`, `ghost_element_hover`, `panel_background`, `text`, `border`, `border_variant`, `accents()` ve `players()` birlikte kullanılır. Bu renkler renderer'a `#rrggbb` CSS hex olarak verilir; alpha kanalı taşınmaz. Şeffaflık gerekiyorsa renk önce tema tarafında uygun zemine blend edilmelidir.
+- Mermaid fontu `ThemeSettings::ui_font.family` üzerinden gelir ve GPUI'nin font fallback çözümlemesinden geçirilir. Sanal Zed font adları burada normalize edilir: `.ZedSans` ve `Zed Plex Sans` `IBM Plex Sans`, `.ZedMono` `Lilex`, `.SystemUIFont` ise `system-ui` olarak çözülür.
 - Mermaid `accent0..accentN` class'ları player renklerinden üretilir; fill rengi light/dark appearance'a göre okunabilir bir kontrasta çekilir. Bu durum, player slot'larının yalnızca collab cursor için değil, görsel markdown diyagramları için de tüketildiği anlamına gelir.
+- Mermaid kaynağı yazılırken `%%{init}%%`, elle `classDef` ve temadan bağımsız hex renkler kullanılmaz. Vurgu gerekiyorsa `A:::accent0 --> B:::accent1` gibi `accent0..accent7` class'ları kullanılır; yalnızca birebir marka/ürün rengi gerekiyorsa hardcoded renk kabul edilir.
 - Tema veya settings değiştiğinde Mermaid image cache'inin invalid edilmesi gerekir; aksi takdirde markdown preview önceki tema renkleriyle kalır.
 
-Editor completion menüsündeki `completion_menu_item_kind = "symbol"` ayarı da syntax theme'i editor metni dışında tüketir: LSP completion kind değerleri `function`, `function.method`, `type`, `property`, `variable`, `keyword`, `string` gibi highlight capture adlarına eşlenir; tam capture bulunamadığında parent capture denenir. Syntax theme boş bırakıldığında bu rozetler renksiz kalır.
+Editor completion menüsündeki `completion_menu_item_kind = "symbol"` ayarı da syntax theme'i editor metni dışında tüketir. Ayar `off` iken rozet yoktur; `symbol` iken her completion için tek harflik bir rozet çizilir ve varsa syntax capture rengiyle boyanır. Noktalı capture adlarında tam ad bulunamazsa parent capture denenir (`function.method` → `function`). Capture yoksa veya capture'ın `color` alanı boşsa rozet yine çizilir, ancak özel renklendirme yapılmaz.
+
+| LSP kind | Rozet | Syntax capture |
+|----------|-------|----------------|
+| `TEXT` | `t` | — |
+| `METHOD` | `m` | `function.method` |
+| `FUNCTION` | `f` | `function` |
+| `CONSTRUCTOR` | `C` | `constructor` |
+| `FIELD` | `f` | `property` |
+| `VARIABLE` | `v` | `variable` |
+| `CLASS` | `c` | `type` |
+| `INTERFACE` | `i` | `type` |
+| `MODULE` | `M` | `namespace` |
+| `PROPERTY` | `p` | `property` |
+| `UNIT` | `u` | — |
+| `VALUE` | `v` | — |
+| `ENUM` | `e` | `enum` |
+| `KEYWORD` | `k` | `keyword` |
+| `SNIPPET` | `s` | `string` |
+| `COLOR` | `c` | — |
+| `FILE` | `F` | — |
+| `REFERENCE` | `r` | — |
+| `FOLDER` | `D` | — |
+| `ENUM_MEMBER` | `e` | `variant` |
+| `CONSTANT` | `c` | `constant` |
+| `STRUCT` | `S` | `type` |
+| `EVENT` | `E` | — |
+| `OPERATOR` | `o` | `operator` |
+| `TYPE_PARAMETER` | `T` | `type` |
 
 ---
 

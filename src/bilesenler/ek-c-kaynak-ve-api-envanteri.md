@@ -104,6 +104,7 @@ Public trait implementasyonları da dış crate için ergonomik bir construction
 
 - `ToggleState`: `From<bool>` ve `From<Option<bool>>`; `None`, `Indeterminate` anlamına gelir.
 - `Color`: `From<Hsla>`, `From<TintColor>`, `From<ButtonStyle>` ve `From<SwitchColor>`. `ButtonStyle::Tinted(tint)` tint rengini taşır; diğer button stilleri `Color::Default` olarak çözümlenir. `SwitchColor::Custom(_)` de `Color` dönüşümünde custom rengi taşımaz, `Default` döner.
+- `Hsla`: `proptest` feature'ı açıkken `Hsla::opaque_strategy()` ve `Arbitrary for Hsla` property test yüzeyi sağlar. Bu üretim component API'si değil, renk ve tema algoritmalarını test etmek için kullanılan GPUI yardımcı yüzeyidir.
 - `AnyIcon`: `From<Icon>` ve `From<AnimationElement<Icon>>`; `Icon` ise `From<IconName>` sağlar.
 - `SplitButtonKind`: `From<IconButton>` ve `From<ButtonLike>`. Bu yüzden `SplitButton::new(left, right)` sol parçada iki component türünü de kabul eder.
 - `EmptyMessage`: `From<String>`, `From<&str>` ve `From<AnyElement>`.
@@ -116,6 +117,15 @@ Aynı kategoride, isim olarak görünmeyen ama trigger ergonomisi açısından k
 - `impl<T: Clickable> Clickable for gpui::AnimationElement<T>` ve `impl<T: Toggleable> Toggleable for gpui::AnimationElement<T>` blanket impl'leri `.map_element(...)` ile delege eder. Bu sayede `IconButton::new(...).with_rotate_animation(2)` gibi bir `AnimationElement<IconButton>` döndüren zincir, `PopoverTrigger` (`IntoElement + Clickable + Toggleable + 'static` alias'ı) için kabul edilir. Bu trait'ler olmasa `PopoverMenu::trigger(...)`, animasyonlu icon button'ları reddederdi.
 
 Private tiplerdeki dönüşümler ise bir tüketici yüzeyi sayılmaz. Örneğin `tooltip.rs` içindeki private `Title` enum'u için `From<SharedString>` vardır; ancak dış API `Tooltip::text(...)`, `Tooltip::simple(...)` ve `Tooltip::for_action*` constructor'ları üzerinden görünür kalır.
+
+### Uygulama Crate'lerinde Component Benzeri Yüzeyler
+
+Bu rehberin ana envanteri `crates/ui` public bileşenlerini kapsar. Yeni Zed düzenlemelerinde bazı önemli yüzeyler uygulama crate'lerinde tanımlı olduğu için public `ui::*` API tablosuna girmez ama bileşen kullanımı açısından bilinmelidir:
+
+- `activity_indicator::ActivityIndicator`, workspace status item olarak LSP, debug, git, filesystem, extension ve formatlama aktivitelerini tek trigger'da gösterir. Loading durumları `Button::loading(true)` üzerinden, statik durumlar `Button::start_icon(...)` üzerinden çizilir.
+- `agent_ui` içindeki `RulesToSkillsModal`, `AlertModal` tabanlı bir modal view'dır. Title bar'daki Skills onboarding banner'ından açılır ve Skills tanıtımı veya migration özetini gösterir.
+- `agent_ui::completion_provider`, `PromptContextType::Skill`, `AvailableSkill` ve `MentionUri::Skill` üzerinden slash completion ve mention akışını sağlar. Skill completion'ları Agent Commands grubundan önce listelenir ve seçildiğinde ilgili `SKILL.md` dosyasına açılabilen bir mention link'i üretir.
+- `settings_ui` sayfaları `SettingItem`, renderer registry ve tool permission satırlarıyla component'leri birleştirir. `CompletionMenuItemKind` dropdown renderer'ı, `git.show_stage_restore_buttons` switch/boolean satırı ve `skill` tool permission satırı bu katmandadır.
 
 ### Lifecycle API İmzaları
 
@@ -445,6 +455,7 @@ Kaynakta public olarak görünen ama genellikle builder bölümünde değil de s
 | `modal.rs` | `Modal::show_back(bool)`, `ModalHeader::show_back_button(bool)`, `Section::contained(bool)` | Modal seviyesinde geri butonu açma, header'a back button ikonu ekleme ve `Section` border'lı yüzey toggle'ı |
 | `tab_bar.rs` | `TabBar::start_children_mut()`, `TabBar::end_children_mut()` | Builder zinciri dışında TabBar başlangıç ve bitiş child listelerini mutably düzenler (`SmallVec<[AnyElement; 2]>`) |
 | `scrollbar.rs` | `ScrollbarAutoHide::should_hide()` | Scrollbar otomatik gizleme kararını okuyan global token; `Global` olarak set ve get edilir |
+| `gpui/src/elements/list.rs` | `ListState::scrollbar_drag_started()`, `ListState::scrollbar_drag_ended()`, `ListState::is_scrollbar_dragging()`, `ListState::set_offset_from_scrollbar(point)`, `ListState::scroll_px_offset_for_scrollbar()` | Variable-height liste scrollbar drag state'i ve scrollbar offset eşlemesi; scroll yönü negatif `y` offset'iyle temsil edilir |
 | `data_table.rs` | `ColumnWidthConfig::table_width(window, cx)`, `ColumnWidthConfig::list_horizontal_sizing(window, cx)`, `ResizableColumnsState::reset_column_to_initial_width(col_idx)`, `Table::pin_cols(n)`, `Table::map_row(callback)`, `Table::empty_table_callback(callback)` | Table genişliği, horizontal sizing, sabit ilk kolonlar ve kolon reset helper'ları; `Table` üzerinde satır ve empty callback'leri |
 | `redistributable_columns.rs` | `TableResizeBehavior::is_resizable()`, `HeaderResizeInfo::reset_column(col_idx, window, cx)`, `RedistributableColumnsState::reset_column_to_initial_width(column_index, window)` | Resize davranışı sorgusu, header bilgi paketi üzerinden reset ve kolon initial width'e dönüş |
 | `context_menu.rs` | `ContextMenu::selected_index()`, `.confirm(...)`, `.secondary_confirm(...)`, `.cancel(...)`, `.end_slot(...)`, `.clear_selected()`, `.select_first(...)`, `.select_last(...)`, `.select_next(...)`, `.select_previous(...)`, `.select_submenu_child(...)`, `.select_submenu_parent(...)`, `.on_action_dispatch(...)`, `.on_blur_subscription(subscription)` | Menü action, seçim, submenu traversal, end slot ve blur subscription state yönetimi |
