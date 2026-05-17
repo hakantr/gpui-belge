@@ -18,6 +18,7 @@ Aşağıdaki tablo, üst barda en sık değiştirilen davranışların hangi dos
 | Sidebar açıkken kontroller gizlenmemeli | `sidebar_render_state` ve `show_left/right_controls` koşulları değiştirilir. |
 | Product duyuru banner'ı gösterilmeli | `AppTitleBar` içinde `OnboardingBanner` muadili bir child kurulur; görünürlük feature flag/ayar predicate'inden gelir, platform kabuğuna taşınmaz. |
 | Update tooltip'i değişmeli | `UpdateVersion` muadili bileşendeki tooltip üreticisi güncellenir; eski `Version:` ve kısa SHA biçimi korunmaz. |
+| Update butonunun durumları ayrıştırılmalı | `UpdateButton` muadilinde `checking`, `downloading`, `installing`, `updated`, `errored` için ayrı constructor'lar tutulur; ilk üçü `disabled(true)` ve spinner ikonuyla işaretlenir, errored mesajı `"Failed to Update"` kalıbına bağlanır. |
 | Sağ tık window menu kapatılmalı | Linux CSD'deki `window.show_window_menu(ev.position)` bağı kaldırılır veya bir ayara bağlanır. |
 | Çift tıklama maximize yerine farklı bir action olmalı | Platform click handler'ları ürünün kendi action'ına yönlendirilir; macOS sistem davranışına bilinçli olarak müdahale edildiği unutulmaz. |
 
@@ -37,6 +38,7 @@ Aşağıdaki listeler, üst bar entegrasyonu tamamlandıktan sonra hızlıca gö
 - Ürün banner'ları `PlatformTitleBar` içine gömülmeden, `AppTitleBar` child grubu olarak kuruluyor mu kontrol edilir.
 - Feature flag'e bağlı banner'ların başlangıçta tek sefer hesaplanmadığı, render sırasında güncel predicate ile gizlenip gösterildiği doğrulanır.
 - Update tooltip'i semantic version için de SHA için de `Update to Version:` biçimini kullanıyor mu kontrol edilir; SHA kısaltma fallback'i bırakılmaz.
+- Update butonunun geçici durumları (`Checking…`, `Downloading…`, `Installing…`) sırasında tıklamanın kapalı olduğu doğrulanır; spinner ikonu `LoadCircle` üzerinden iki turluk dönüş yapıyor mu kontrol edilir.
 - Mevcut pencereye/sidebar'a proje açan `Activate` akışı pencereyi öne alıyor ve titlebar state'ini güncelliyor mu test edilir.
 
 ### Linux/FreeBSD
@@ -83,3 +85,4 @@ Aşağıdaki liste, üst bar port edilirken en sık karşılaşılan yanlışlar
 - Uygulamaya özgü menülerin doğrudan `PlatformTitleBar` içine gömülmesi. Daha temiz model, platform kabuğunu ayrı ve ürün titlebar içeriğini ayrı tutmaktır. Bu ayrım bozulduğunda port edilen bileşen ürünün lehçesine kilitlenir ve başka projede yeniden kullanılamaz hale gelir.
 - Skills gibi ürün duyurularının platform kabuğuna taşınması. Bu banner'lar feature flag, migration modalı ve ürün metniyle ilgilidir; doğru yerleri `AppTitleBar` katmanıdır.
 - Update tooltip'inde eski `Version:` veya kısa SHA biçimini korumak. Yeni Zed davranışı tam SHA ve `Update to Version:` öneki kullanır; portta eski biçim için ayrı uyumluluk yolu açılırsa davranış gereksiz yere çatallanır.
+- Update butonunun spinner'lı durumlarını tıklanabilir bırakmak. `Checking`, `Downloading` ve `Installing` constructor'ları `disabled(true)` ile gelir; bu bayrak portta atlanırsa kullanıcı yarım kalmış indirme sırasında tekrar tıklayıp aynı işi yeniden başlatabilir. Errored etiketinin eski `"Failed to update Zed"` biçimini korumak da aynı şekilde gereksiz çatalı doğurur; yeni metin `"Failed to Update"` olarak sadeleştirilmiştir.

@@ -15,6 +15,7 @@
 | `TitleBar` | `crates/title_bar/src/title_bar.rs` | Zed'in uygulama başlığı, proje adı, menü, kullanıcı ve workspace state'ini `PlatformTitleBar` içine bağlayan üst seviye bileşen. |
 | `OnboardingBanner` | `crates/title_bar/src/onboarding_banner.rs` | Ürün titlebar'ında görünen duyuru/migration banner'ı. Artık yalnız geleceğe bırakılmış ölü altyapı değildir; Skills duyurusu için aktif kullanılır. |
 | `UpdateVersion` | `crates/title_bar/src/update_version.rs` | Auto-update durumunu üst barda gösterir ve update tooltip metnini üretir. Tooltip artık eski `Version:` biçimini kullanmaz; `Update to Version:` öneki ve SHA için tam commit değeri kullanılır. |
+| `UpdateButton` | `crates/ui/src/components/collab/update_button.rs` | `UpdateVersion` tarafından kullanılan görsel kabuk. `checking`, `downloading`, `installing`, `updated`, `errored` durumları için ayrı constructor'lar sağlar. `Checking/Downloading/Installing` durumlarında butona artık `disabled(true)` set edilir; bu süre içinde tıklama davranışı kapalıdır. Animated ikon `LoadCircle` (2 turluk dönüş) ile gelir; eski `ArrowCircle` ikonu yalnız `updated` ve `errored` dışındaki spinning state'lerden kalkmıştır. Errored mesajı `"Failed to Update"` biçimindedir; `Failed to update Zed` metni bırakılmaz. |
 | `client_side_decorations` | `crates/workspace/src/workspace.rs` | CSD pencere gölgesi, border, resize kenarları ve inset yönetimi. |
 | `WindowOptions` | `crates/gpui/src/platform.rs` | Pencere dekorasyonu, titlebar options ve native tabbing identifier ayarları. |
 

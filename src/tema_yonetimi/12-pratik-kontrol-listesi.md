@@ -45,26 +45,30 @@ Son bölüm, önceki adımlarda alınan kararları hata sınıflarına göre hı
 21. **Mermaid kaynağında tema dışı stil taşımak.** `%%{init}%%`, elle `classDef` veya rastgele hex renkler aktif tema ile çakışır. Vurgu için `accent0..accent7` kullanılmalı; cache tema/settings değişiminde invalid edilmelidir. → Konu 41.
 22. **Completion rozet ayarını tema ayarı sanmak.** `completion_menu_item_kind` `EditorSettingsContent` alanıdır; `ThemeSettingsContent` veya provider trait'ine eklenmez. Renk tüketimi syntax theme üstünden yapılır. → Konu 39, 41.
 23. **Markdown preview metin fontu ile code fontunu birleştirmek.** Düz preview metni `markdown_preview_font_family`, inline code ve code block ise `markdown_preview_code_font_family` kullanır. İki alanın fallback hedefleri farklıdır. → Konu 39, 41.
+24. **Tema değişiminden sonra Mermaid cache'inin invalid edilmemesi.** SVG çıktısı `MermaidState::cache` içinde tutulur; tema veya `ThemeSettings` değiştiğinde `Markdown::invalidate_mermaid_cache(cx)` çağrılmazsa diyagramlar eski renkleri taşımaya devam eder. Tema observer'ı bu çağrıyı kendi mantığına bağlamalıdır. → Konu 41, 43.
+25. **Mermaid kaynağına alpha taşıyan renk vermek.** Renderer hex çıkışını `#rrggbb` formatına kısaltır; alpha kanalı düşer. Şeffaflık gerekiyorsa renk önce uygun zemine blend edilmelidir. → Konu 41.
+26. **Yarı yazılmış fenced blok'un render bekleneceğini sanmak.** Mermaid pipeline'ı yalnızca `metadata.is_fenced_closed` olan fenced blok'ları toplar; açık kalmış bir blok atlanır, parse hatası üretmez. Bu, akış halinde gelen markdown önizlemelerinde sessiz davranışın kaynağıdır. → Konu 41.
+27. **`~~~src` ile başka uzantı bağlamak.** Mermaid `FencedSrc` yolu yalnızca `.mermaid` ve `.mmd` uzantılarını tanır; diğerleri sessizce atlanır. Etiketli `~~~mermaid` blok'u her zaman alternatiftir. → Konu 41.
 
 ### Bundling / lisans (Bölüm VI)
 
-24. **`palette` sürümünün Zed'le aynı tutulmaması.** Renk dönüşümü kayar; fixture testleri kırılır. → Konu 5, 21.
-25. **`refineable` dep'inin fork'lanmadan production'a alınması.** `publish = false` ayarı crates.io yayını engeller; vendor veya fork şarttır. → Konu 3, 26.
-26. **Zed `default_colors.rs` HSL değerlerinin birebir kopyalanması.** GPL-3 ihlalidir. Bağımsız anchor değerleri seçilmelidir. → Konu 3, 25.
-27. **Lisans dosyasını "sonradan eklerim" demek.** Bundled tema'ya atıf eklenmediğinde telif ihlali oluşur. → Konu 27.
-28. **GPL lisanslı fixture'ın alınması.** Tema JSON'undaki HSL değerleri bile telif kapsamına girer; yalnızca MIT/Apache gibi uyumlu lisanslı temalar fixture'a alınır. → Konu 27.
+28. **`palette` sürümünün Zed'le aynı tutulmaması.** Renk dönüşümü kayar; fixture testleri kırılır. → Konu 5, 21.
+29. **`refineable` dep'inin fork'lanmadan production'a alınması.** `publish = false` ayarı crates.io yayını engeller; vendor veya fork şarttır. → Konu 3, 26.
+30. **Zed `default_colors.rs` HSL değerlerinin birebir kopyalanması.** GPL-3 ihlalidir. Bağımsız anchor değerleri seçilmelidir. → Konu 3, 25.
+31. **Lisans dosyasını "sonradan eklerim" demek.** Bundled tema'ya atıf eklenmediğinde telif ihlali oluşur. → Konu 27.
+32. **GPL lisanslı fixture'ın alınması.** Tema JSON'undaki HSL değerleri bile telif kapsamına girer; yalnızca MIT/Apache gibi uyumlu lisanslı temalar fixture'a alınır. → Konu 27.
 
 ### Test (Bölüm VI ve XI)
 
-29. **`#[gpui::test]` `cx.update` içinde init yapmamak.** Test başında `kvs_tema::init(cx)` veya `init_test(cx)` çağrısı gerekir. → Konu 44.
-30. **Hsla'nın `assert_eq!` ile karşılaştırılması.** Float eşitliği yanıltıcıdır; epsilon karşılaştırması tercih edilir. → Konu 28.
-31. **`feature = "test-util"`'ın production'da açık bırakılması.** `#[cfg(any(test, feature = "test-util"))]` koşulu kurulur; release build'inde kapatılmalıdır. → Konu 44.
+33. **`#[gpui::test]` `cx.update` içinde init yapmamak.** Test başında `kvs_tema::init(cx)` veya `init_test(cx)` çağrısı gerekir. → Konu 44.
+34. **Hsla'nın `assert_eq!` ile karşılaştırılması.** Float eşitliği yanıltıcıdır; epsilon karşılaştırması tercih edilir. → Konu 28.
+35. **`feature = "test-util"`'ın production'da açık bırakılması.** `#[cfg(any(test, feature = "test-util"))]` koşulu kurulur; release build'inde kapatılmalıdır. → Konu 44.
 
 ### API yüzeyi (Bölüm XI)
 
-32. **`refinement.rs` modülünün public yapılması.** `pub use crate::refinement::*` sözleşmeyi sızdırır. `pub(crate) mod refinement;` zorunludur. → Konu 43.
-33. **`schema::*` glob ile public ihraç.** Yeni iç tip otomatik olarak public hale gelir. Tek tek `pub use` yazılmalıdır. → Konu 43.
-34. **`Theme.styles` alanının doğrudan public olması.** İç düzen sızıntısına yol açar; accessor metotlarının (`theme.colors()`) tercih edilmesi gerekir. → Konu 12, 41.
+36. **`refinement.rs` modülünün public yapılması.** `pub use crate::refinement::*` sözleşmeyi sızdırır. `pub(crate) mod refinement;` zorunludur. → Konu 43.
+37. **`schema::*` glob ile public ihraç.** Yeni iç tip otomatik olarak public hale gelir. Tek tek `pub use` yazılmalıdır. → Konu 43.
+38. **`Theme.styles` alanının doğrudan public olması.** İç düzen sızıntısına yol açar; accessor metotlarının (`theme.colors()`) tercih edilmesi gerekir. → Konu 12, 41.
 
 ### Özet karar matrisi
 
