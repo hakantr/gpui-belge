@@ -11,9 +11,9 @@ Bu bölüm, önceki başlıklardaki API'leri günlük senaryolara oturtarak öze
 Bir Zed workspace penceresi açılırken adımlar şu sırayla işler:
 
 1. `zed::build_window_options(display_uuid, cx)` çağrılır.
-2. Root view olarak workspace veya multi-workspace entity oluşturulur.
+2. Kök view olarak workspace veya multi-workspace entity oluşturulur.
 3. Başlık çubuğu için `TitleBar`/`PlatformTitleBar` yolu izlenir.
-4. Root içerik `workspace::client_side_decorations(...)` ile sarılır.
+4. Kök içerik `workspace::client_side_decorations(...)` ile sarılır.
 5. Kapatma işlemi için `workspace::CloseWindow` action'ı dispatch edilir.
 
 #### Küçük Diyalog Penceresi
@@ -164,7 +164,7 @@ Tipik bir tanım şöyledir:
 Aşağıdaki liste rehber boyunca anlatılan tuzakları tek bir noktada toparlar; her madde belirtisi ile birlikte altta yatan nedeni de işaret eder.
 
 - **İstenen süslemeye güvenme** — `WindowOptions.window_decorations` yalnız bir istektir. Çizim sırasında fiili sonucu `window.window_decorations()` çağrısı verir; karar bu sonuca dayanmalıdır.
-- **Bulanıklık görünmüyor** — Root view veya tema tamamen opak bir renk çiziyor olabilir. Bulanıklık efektinin görünmesi için saydam bir surface ve içerikte alfa bırakılması şarttır.
+- **Bulanıklık görünmüyor** — Kök view veya tema tamamen opak bir renk çiziyor olabilir. Bulanıklık efektinin görünmesi için saydam bir surface ve içerikte alfa bırakılması şarttır.
 - **Linux kontrol butonları yanlış tarafta** — Doğru kaynak `cx.button_layout()`'tur ve değişimi `observe_button_layout_changed` ile izlenmelidir.
 - **Windows başlık butonları tıklanmıyor** — Butonlarda `window_control_area(Close/Max/Min)` çağrısının eksik kalması yerel hit-test'i bozar.
 - **Kapatma davranışı atlanıyor** — Zed workspace penceresinde doğrudan `remove_window` yerine `workspace::CloseWindow` action'ı dispatch edilmelidir; aksi halde kirli buffer ve kullanıcı onayı akışları atlanır.
@@ -200,13 +200,13 @@ Yeni bir pencere eklenirken aşağıdaki kontrol listesi unutulan bir ayrıntı 
 
 Bu başlık altında rehber boyunca en çok sorulan dört konunun kısa özeti yer alır.
 
-**İleride pencere oluşturmak için izlenecek yol.** Workspace penceresi için başlangıç noktası `zed::build_window_options`'tır. Özel ve küçük bir pencere için doğrudan `cx.open_window(WindowOptions { ... }, |window, cx| cx.new(...))` çağrısı kullanılır. Root view, `Render` uygulayan bir `Entity` olmalıdır.
+**İleride pencere oluşturmak için izlenecek yol.** Workspace penceresi için başlangıç noktası `zed::build_window_options`'tır. Özel ve küçük bir pencere için doğrudan `cx.open_window(WindowOptions { ... }, |window, cx| cx.new(...))` çağrısı kullanılır. Kök view, `Render` uygulayan bir `Entity` olmalıdır.
 
 **Pencere dekorunun tanımlanması.** Linux için `WindowOptions.window_decorations = Some(WindowDecorations::Client/Server)` verilir. Çizim tarafında fiili sonuç `window.window_decorations()` ile okunur. Zed tarzı istemci süslemesi için `workspace::client_side_decorations` kullanılır. macOS ve Windows'ta özel başlık çubuğu için `TitlebarOptions { appears_transparent: true }` ya da `titlebar: None` ile `PlatformTitleBar` tercih edilir.
 
 **Kontrol butonlarının yönetimi.** Zed içinde `platform_title_bar::render_left_window_controls` ve `render_right_window_controls` kullanılır. Linux'ta `cx.button_layout()` ve `window.window_controls()` sonucu belirleyicidir. Windows'ta butonlar `WindowControlArea::{Min, Max, Close}` ile yerel hit-test'e bağlanır. Kapatma için workspace akışında `CloseWindow` action'ı dispatch edilir.
 
-**Bulanıklık yönetiminin işletim sistemine göre uygulanması.** Pencere açılırken veya tema değiştiğinde `window.set_background_appearance(...)` çağrılır. Zed tema akışı `opaque`, `transparent` ve `blurred` değerlerini destekler. macOS gerçek bulanıklığı `NSVisualEffectView` ile, Windows composition/DWM ile, Wayland ise compositor bulanıklık protokolü ile uygular. Destek olmadığında `Blurred` saydam gibi davranabilir. Root UI opak çizdiğinde bulanıklık görünmez kalır.
+**Bulanıklık yönetiminin işletim sistemine göre uygulanması.** Pencere açılırken veya tema değiştiğinde `window.set_background_appearance(...)` çağrılır. Zed tema akışı `opaque`, `transparent` ve `blurred` değerlerini destekler. macOS gerçek bulanıklığı `NSVisualEffectView` ile, Windows composition/DWM ile, Wayland ise compositor bulanıklık protokolü ile uygular. Destek olmadığında `Blurred` saydam gibi davranabilir. Kök UI opak çizdiğinde bulanıklık görünmez kalır.
 
 **Platform farklarının soyutlanacağı yer.** Davranış pencere ile ilgiliyse GPUI `Platform` ve `PlatformWindow` katmanına bağlanır. Zed UI görünümüyle ilgiliyse `PlatformStyle::platform()` ve `platform_title_bar` bileşenleri kullanılır. Ayar farkı gerekiyorsa `settings_content` şeması ve `settings` dönüşümleri devreye girer.
 

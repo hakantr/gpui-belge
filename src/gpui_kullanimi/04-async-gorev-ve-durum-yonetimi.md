@@ -112,7 +112,7 @@ cx.spawn_with_priority(Priority::High, async move |cx| {
 - `AsyncApp::refresh()`, tüm pencereler için yeniden çizim planlar; async akıştan yeniden çizim tetiklemek için `update(|cx| cx.refresh_windows())` yazmaya gerek bırakmaz.
 - `AsyncApp::background_executor()` ve `foreground_executor()`, çalıştırıcı handle'larını döndürür. Zamanlayıcı, timeout veya iç içe `spawn` gerektiğinde buradan alınır.
 - `AsyncApp::subscribe(&entity, ...)`, `open_window(options, ...)`, `spawn(...)`, `has_global::<G>()`, `read_global`, `try_read_global`, `read_default_global`, `update_global` ve `on_drop(&weak, ...)`, `await` edilebilir app görevlerinde aynı ön plan verisine güvenli dönüş noktalarıdır.
-- `AsyncWindowContext::window_handle()`, bağlı pencereyi verir. `update(|window, cx| ...)` yalnızca pencere verisini güncellerken, `update_root(|root, window, cx| ...)` root `AnyView` de gerektiğinde kullanılır.
+- `AsyncWindowContext::window_handle()`, bağlı pencereyi verir. `update(|window, cx| ...)` yalnızca pencere verisini güncellerken, `update_root(|root, window, cx| ...)` kök `AnyView` de gerektiğinde kullanılır.
 - `AsyncWindowContext::on_next_frame(...)`, `read_global`, `update_global`, `spawn(...)` ve `prompt(...)`, pencereye bağlı async işlerde "pencere kapanmış olabilir" durumunu `Result` veya yedek `receiver` üzerinden yönetir.
 
 **Entity ve pencereye bağlı öncelikli spawn.** Öncelikli işlerin daha tipli sürümleri için de yardımcılar mevcuttur:
@@ -185,9 +185,9 @@ cx.spawn_in(window, async move |this, cx| {
 - Görevler `Vec<Task<()>>` içinde toplandığında elden çıkma sırası sürpriz olabilir; iptalin amaçlanmadığı tipik akışlarda `detach()` daha açık bir niyet bildirir.
 - `cx.spawn_in(window, ...)`, `Window` düştüğünde görevi otomatik iptal etmez; `WeakEntity` üzerinden `update` veya `update_in` çağrısı `Result` döndüğünden bu dönüş, erken çıkış sinyali olarak ele alınmalıdır.
 
-## Uygulama Geneli Veri, Observe ve Event
+## Uygulama Geneli Veri, Observe ve Olay
 
-GPUI'da uygulama genelindeki paylaşılan veri üç ana mekanizmayla yönetilir: `Global` (uygulama geneli veri), observe (veri değişimini dinlemek) ve event (tipli mesaj yayma). Üçü de bağlam üzerinden çağrılır ve genellikle birlikte kullanılır.
+GPUI'da uygulama genelindeki paylaşılan veri üç ana mekanizmayla yönetilir: `Global` (uygulama geneli veri), observe (veri değişimini dinlemek) ve olay (tipli mesaj yayma). Üçü de bağlam üzerinden çağrılır ve genellikle birlikte kullanılır.
 
 **Uygulama geneli veri.** Uygulama ömrü boyunca tek nüsha tutulan bir kaynak için `Global` trait'i uygulanır ve `cx.set_global` ile yerleştirilir:
 
@@ -213,7 +213,7 @@ subscriptions.push(cx.observe(&other, |this, other, cx| {
 }));
 ```
 
-**Event.** Tipli mesaj yayma için entity `EventEmitter<E>` uygular; yayılan olay abonelere ulaşır:
+**Olay.** Tipli mesaj yayma için entity `EventEmitter<E>` uygular; yayılan olay abonelere ulaşır:
 
 ```rust
 struct Saved;
@@ -346,7 +346,7 @@ self._subscription = cx.subscribe_in(&modal, window, |this, modal, event, window
 **Odak yardımcıları.** Odak akışına müdahale için tipli yardımcılar mevcuttur:
 
 - `cx.focus_view(&entity, window)` — `Focusable` uygulayan başka bir view'a odağı taşır.
-- `cx.focus_self(window)` — o anki entity `Focusable` ise odağı kendine taşır. İçeride `window.defer(...)` kullanır; bu nedenle render ya da action geri çağrısı içinde çağrıldığında odak değişimi etki döngüsünün sonunda uygulanır.
+- `cx.focus_self(window)` — o anki entity `Focusable` ise odağı kendine taşır. İçeride `window.defer(...)` kullanır; bu nedenle çizim ya da action geri çağrısı içinde çağrıldığında odak değişimi etki döngüsünün sonunda uygulanır.
 - `window.disable_focus()` — pencerenin odağını sıfırlar ve ardından `focus_enabled` bayrağını `false` yapar. Tersine çeviren bir API yoktur; yani çağrıldıktan sonra `focus_next` / `focus_prev` / `focus(...)` çağrıları sessizce işlem yapmaz. Uygulama bileşenlerinde genellikle gerekmez; sadece pencere ömrü boyunca klavye odağını kalıcı kapatmak isteyen ender durumlarda kullanılır.
 
 **Tuzaklar.** Bu yardımcı aileleri kullanılırken gözden kaçabilecek noktalar:
@@ -443,7 +443,7 @@ cx.assert_no_new_leaks(&snapshot);
 
 ## Entity Tip Soyutlaması, Geri Çağrı Adaptörleri ve View Önbelleği
 
-Bu bölüm GPUI çekirdeğinde public olan ama günlük kullanımda kolay atlanan küçük API yüzeylerini toplar. Entity'nin tipli ve tipsiz varyantları, view önbellek mekanizması, geri çağrı adaptörleri ve düşük seviyeli kimlik tipleri burada ele alınır.
+Bu bölüm GPUI çekirdeğinde genel olan ama günlük kullanımda kolay atlanan küçük API yüzeylerini toplar. Entity'nin tipli ve tipsiz varyantları, view önbellek mekanizması, geri çağrı adaptörleri ve düşük seviyeli kimlik tipleri burada ele alınır.
 
 #### Entity ve WeakEntity Tam Yüzeyi
 
@@ -523,7 +523,7 @@ Bu yüzden `AnyEntity` ve `AnyWeakEntity` üzerindeki bazı metotlar tipli handl
 |---|---|---|---|
 | `WeakEntity<T>` | `upgrade()` | `Option<Entity<T>>` | Doğrudan; aynı adlı `AnyWeakEntity::upgrade -> Option<AnyEntity>` gölgelenir. |
 | `WeakEntity<T>` | `update(cx, \|&mut T, &mut Context<T>\| ...)` | `Result<R>` | Doğrudan. |
-| `WeakEntity<T>` | `update_in(cx, \|&mut T, &mut Window, &mut Context<T>\| ...)` | `Result<R>` | Doğrudan; entity'nin son render edildiği pencereyi `App::with_window` ile bulur. |
+| `WeakEntity<T>` | `update_in(cx, \|&mut T, &mut Window, &mut Context<T>\| ...)` | `Result<R>` | Doğrudan; entity'nin son çizildiği pencereyi `App::with_window` ile bulur. |
 | `WeakEntity<T>` | `read_with(cx, \|&T, &App\| ...)` | `Result<R>` | Doğrudan. |
 | `WeakEntity<T>` | `new_invalid()` | `Self` | Doğrudan; aynı adlı `AnyWeakEntity::new_invalid -> AnyWeakEntity` gölgelenir. |
 | `WeakEntity<T>` deref | `entity_id()` | `EntityId` | Sahip `AnyWeakEntity`; deref ile çağrılır. |
@@ -552,9 +552,9 @@ div().child(view.clone());
 - `any_view.downcast::<T>() -> Result<Entity<T>, AnyView>` — tipli handle'a geri dönmek için kullanılır.
 - `any_view.downgrade() -> AnyWeakView` ve `AnyWeakView::upgrade() -> Option<AnyView>` — zayıf handle dönüşümleri.
 - `any_view.entity_id()` ve `entity_type()` — hata ayıklama ve kayıt defteri mantığında kullanılır.
-- `EmptyView` — hiçbir şey render etmeyen `Render` view'udur; yer tutucu amaçlı kullanılır.
+- `EmptyView` — hiçbir şey çizmeyen `Render` view'udur; yer tutucu amaçlı kullanılır.
 
-**Önbelleklenmiş view.** `AnyView::cached(style_refinement)`, pahalı bir alt öğe view'unun render'ını önbelleğe almak için kullanılır:
+**Önbelleklenmiş view.** `AnyView::cached(style_refinement)`, pahalı bir alt öğe view'unun çizim sonucunu önbelleğe almak için kullanılır:
 
 ```rust
 div().child(
@@ -563,7 +563,7 @@ div().child(
 )
 ```
 
-Önbellek, view `cx.notify()` çağırmadığı sürece önceki yerleşim, çizim hazırlığı ve çizim aralıklarını yeniden kullanır. `Window::refresh()` çağrısı önbelleği atlatır; inspector seçimi açıkken de hitbox'ların eksiksiz olabilmesi için önbellek devre dışı kalır. Önbellek anahtarı; sınırları (`bounds`), aktif `ContentMask` ve aktif `TextStyle`'ı içerir. Bu nedenle `cached(...)` çağrısında verilen root `StyleRefinement`, view'un gerçek root yerleşim stiliyle uyumlu olmalıdır; yanlış refinement yerleşimi bayat veya hatalı gösterir.
+Önbellek, view `cx.notify()` çağırmadığı sürece önceki yerleşim, çizim hazırlığı ve çizim aralıklarını yeniden kullanır. `Window::refresh()` çağrısı önbelleği atlatır; inspector seçimi açıkken de hitbox'ların eksiksiz olabilmesi için önbellek devre dışı kalır. Önbellek anahtarı; sınırları (`bounds`), aktif `ContentMask` ve aktif `TextStyle`'ı içerir. Bu nedenle `cached(...)` çağrısında verilen kök `StyleRefinement`, view'un gerçek kök yerleşim stiliyle uyumlu olmalıdır; yanlış refinement yerleşimi bayat veya hatalı gösterir.
 
 #### Geri Çağrı Adaptörleri
 
@@ -588,7 +588,7 @@ Geri çağrıdan view verisine geri dönmek için uygun adaptör seçilir:
 
 - `focus_handle.downgrade() -> WeakFocusHandle`
 - `WeakFocusHandle::upgrade() -> Option<FocusHandle>`
-- `focus_handle.contains(&other, window) -> bool` — son render edilen ekran karesindeki odak ağacı ilişkisini kontrol eder.
+- `focus_handle.contains(&other, window) -> bool` — son çizilen ekran karesindeki odak ağacı ilişkisini kontrol eder.
 - `focus_handle.dispatch_action(&action, window, cx)` — yönlendirmeyi odaktaki düğüm yerine belirli bir odak handle'ının düğümünden başlatır.
 
 `contains_focused(window, cx)` "ben veya altımdaki bir düğüm odakta mı?" sorusuna, `within_focused` ise "ben odaktaki düğümün içinde miyim?" sorusuna cevap verir. `within_focused` imzasında `cx: &mut App` vardır; çünkü yönlendirme ve odak yolu hesaplarında uygulama verisiyle çalışır.

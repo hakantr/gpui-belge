@@ -304,7 +304,7 @@ canvas(
 
 **Tessellator parametreleri** (`PathStyle`, `FillOptions`, `StrokeOptions`, `FillRule`).
 
-GPUI bu tipleri lyon'dan yeniden dışa aktarır (`pub use lyon::tessellation::{FillOptions, FillRule, StrokeOptions}`, `path_builder.rs:11-12`). `PathBuilder.style: PathStyle` alanı public'tir; iki varyantı vardır:
+GPUI bu tipleri lyon'dan yeniden dışa aktarır (`pub use lyon::tessellation::{FillOptions, FillRule, StrokeOptions}`, `path_builder.rs:11-12`). `PathBuilder.style: PathStyle` alanı `pub` görünürlüktedir; iki varyantı vardır:
 
 ```rust
 pub enum PathStyle {

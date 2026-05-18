@@ -235,7 +235,7 @@ Workspace item açma yalnız `Pane::add_item` çağrısından ibaret değildir. 
 
 #### SerializableItem ve Restore
 
-`SerializableItem`, workspace kapanırken veya item event'i geldiğinde item durumunu workspace DB'ye yazmak ve daha sonra geri yüklemek için kullanılır:
+`SerializableItem`, workspace kapanırken veya item olayı geldiğinde item durumunu workspace DB'ye yazmak ve daha sonra geri yüklemek için kullanılır:
 
 ```rust
 pub trait SerializableItem: Item {
@@ -277,8 +277,8 @@ workspace::register_serializable_item::<MyItem>(cx);
 ```
 
 - `serialized_item_kind()` session DB'deki discriminant'tır; restore akışı item tipini bu değer üzerinden bulur.
-- `serialize(..., closing, ...)` `None` döndürürse o event için yazma yapılmaz.
-- `should_serialize(event)` item event'inden sonra serileştirmenin gerekip gerekmediğini belirler.
+- `serialize(..., closing, ...)` `None` döndürürse o olay için yazma yapılmaz.
+- `should_serialize(event)` item olayından sonra serileştirmenin gerekip gerekmediğini belirler.
 - `cleanup(workspace_id, alive_items, ...)` DB'de canlı olmayan item kayıtlarını temizlemek için çağrılır.
 - `SerializableItemHandle` `Entity<T: SerializableItem>` için blanket olarak uygulanır; pane ve workspace tip silme bu handle üzerinden çalışır.
 
@@ -342,7 +342,7 @@ Workspace search bar'ın bir item içinde çalışması için `SearchableItem` g
 Collab ve follow akışı için `FollowableItem` kullanılır:
 
 - `remote_id()`, `to_state_proto`, `from_state_proto` uzak view durumunu taşır.
-- `to_follow_event(event)` item event'ini follow event'e çevirir.
+- `to_follow_event(event)` item olayını follow olayına çevirir.
 - `add_event_to_update_proto` ve `apply_update_proto` artımlı uzak güncelleme akışıdır.
 - `set_leader_id` takip edilen kullanıcı bilgisini item durumuna işler.
 - `dedup(existing, ...) -> Option<Dedup>` uzak item açılırken mevcut item ile birleştirme veya değiştirme kararıdır.

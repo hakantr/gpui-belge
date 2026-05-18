@@ -71,7 +71,7 @@ Pencere argümanı isteyen yardımcılar `TestAppContext` üzerindeki `simulate_
 - Gerçek tutarlılık için `smol::Timer` yerine `cx.background_executor.timer(d)` tercih edilir.
 - `run_until_parked` ile `advance_clock` kombine edilirken önce clock ilerletilir, sonra park beklenir. `VisualTestContext` `TestAppContext`'in içine deref ettiği için normal yolda `cx.background_executor.advance_clock(d)` kullanılır; doğrudan `advance_clock(d)` yardımcısı `VisualTestAppContext` üzerinde yer alır.
 - Async test için `#[gpui::test]` `async fn(cx: &mut TestAppContext)` formunu destekler; ön plan task'ları orada `cx.spawn` ile kurulur.
-- Pencerenin gerçekten çizilmesi için `VisualTestContext::draw(...)`, `TestApp::draw()` veya doğrudan `window.draw(cx).clear()` kullanan bir pencere update'i gerekebilir; aksi halde hata ayıklama sınırları veya yerleşim bilgisi üretilmez.
+- Pencerenin gerçekten çizilmesi için `VisualTestContext::draw(...)`, `TestApp::draw()` veya doğrudan `window.draw(cx).clear()` kullanan bir pencere güncellemesi gerekebilir; aksi halde hata ayıklama sınırları veya yerleşim bilgisi üretilmez.
 
 **Tuzaklar.** Test simulasyonunda atlanan noktalar:
 
@@ -128,10 +128,10 @@ Pencere argümanı isteyen yardımcılar `TestAppContext` üzerindeki `simulate_
 
 - `div().debug_selector(|| "my-button")` — test ve inspector'da seçici atar.
 - `crates/gpui/src/profiler.rs` — executor task timing buffer'ları; runtime'da `gpui::profiler::set_enabled(true)` ile açılır ve thread timing delta'ları `ProfilingCollector` ile okunur.
-- `RUST_LOG=gpui=debug` ile event/key dispatch log seviyesi yükselir.
+- `RUST_LOG=gpui=debug` ile olay/key dispatch log seviyesi yükselir.
 - `debug_selector` değerleri testte `VisualTestContext::debug_bounds(selector)` üzerinden okunur; üretim kaplaması için ayrı bir env bayrağı gerekir.
 
-## Default Colors, GPU Specs ve Platform Diagnostics
+## DefaultColors, GPU Specs ve Platform Tanıları
 
 Tema sistemi dışındaki küçük ama pratik platform yüzeyleri burada toplanır:
 
@@ -247,7 +247,7 @@ Aşağıdaki sabitler her seferinde araştırılmak yerine tek noktada toplanır
 
 CSS cursor karşılıklarıyla birlikte:
 
-- `Arrow` (default)
+- `Arrow` (varsayılan)
 - `IBeam`, `IBeamCursorForVerticalLayout` — metin girişi.
 - `Crosshair`
 - `OpenHand` (`grab`), `ClosedHand` (`grabbing`)
@@ -267,7 +267,7 @@ Element üzerinde `.cursor(CursorStyle::PointingHand)` ya da kısayollar `.curso
 CSS weight değerleriyle birebir:
 
 - `THIN` (100), `EXTRA_LIGHT` (200), `LIGHT` (300)
-- `NORMAL` (400, default), `MEDIUM` (500)
+- `NORMAL` (400, varsayılan), `MEDIUM` (500)
 - `SEMIBOLD` (600), `BOLD` (700)
 - `EXTRA_BOLD` (800), `BLACK` (900)
 
@@ -338,29 +338,29 @@ Bazı genel tipler element ağacının yerleşim, prepaint ve paint fazları ara
 
 Normal uygulama kodunda bu durum tipleri çoğunlukla doğrudan tutulmaz; `div()`, `canvas(...)`, `img(...)`, `svg()`, `list(...)`, `uniform_list(...)`, `anchored()`, `deferred(...)` ve ilgili element builder'ları bunları üretir. Özel element uygulaması yazılırken `Element::request_layout`, `Element::prepaint` ve `Element::paint` dönüş değerlerinde bu taşıyıcıların benzer desenleri izlenir.
 
-#### Girdi Event Tipleri
+#### Girdi Olay Tipleri
 
-`interactive.rs` event ailesi:
+`interactive.rs` olay ailesi:
 
 - Trait sınıfları: `InputEvent`, `KeyEvent`, `MouseEvent`, `GestureEvent`.
 - Klavye: `ModifiersChangedEvent`, `KeyboardClickEvent`, `KeyboardButton`.
 - Fare: `MouseClickEvent`, `MouseExitEvent`, `PressureStage`.
 - Dokunma ve hareket: `TouchPhase`, `NavigationDirection`.
 - Hitbox: `HitboxId` çizilmiş kare içinde hitbox'ı tanımlayan opaque id'dir; uygulama kodu genellikle `Hitbox` handle'ı ve `window.hitbox(...)` sonucu ile çalışır.
-- Drag/drop tarafında `ExternalPaths` ve `FileDropEvent` "Drag ve Drop İçerik Üretimi" başlığında ayrıca ele alınmıştır.
+- Drag/drop tarafında `ExternalPaths` ve `FileDropEvent` "Sürükleme ve Bırakma İçeriği Üretimi" başlığında ayrıca ele alınmıştır.
 
-Element geri çağrılarında somut event tipi çoğunlukla otomatik gelir: `.on_mouse_down(|event, window, cx| ...)`, `.on_scroll_wheel(...)`, `.on_modifiers_changed(...)` gibi. Yapay test event'i veya platform girdi çevirimi yazılırken `InputEvent::to_platform_input()` hattı önemlidir.
+Element geri çağrılarında somut olay tipi çoğunlukla otomatik gelir: `.on_mouse_down(|event, window, cx| ...)`, `.on_scroll_wheel(...)`, `.on_modifiers_changed(...)` gibi. Yapay test olayı veya platform girdi çevirimi yazılırken `InputEvent::to_platform_input()` hattı önemlidir.
 
-**Modifiers deref aliasing (asimetrik).** Aşağıdaki dört event açıkça `impl Deref for X { type Target = Modifiers; }` taşır (`crates/gpui/src/interactive.rs:77`, `:450`, `:502`, `:590`):
+**Modifiers deref aliasing (asimetrik).** Aşağıdaki dört olay açıkça `impl Deref for X { type Target = Modifiers; }` taşır (`crates/gpui/src/interactive.rs:77`, `:450`, `:502`, `:590`):
 
 - `ModifiersChangedEvent`
 - `ScrollWheelEvent`
 - `PinchEvent`
 - `MouseExitEvent`
 
-Bu sayede `Modifiers` üzerindeki tüm `&self` metotları — `secondary()`, `modified()`, `number_of_modifiers()`, `is_subset_of(...)` ve `control`, `alt`, `shift`, `platform`, `function` alanları — bu dört event üzerinde doğrudan çağrılabilir. "Keystroke, Modifiers ve Platform Bağımsız Kısayollar" başlığındaki kısayollar (`Modifiers::command_shift()` vb.) ise `Modifiers` üzerinde **inherent associated function**'dır; event üzerinden çağrılmaz, ayrı bir `Modifiers` üretmek için kullanılır.
+Bu sayede `Modifiers` üzerindeki tüm `&self` metotları — `secondary()`, `modified()`, `number_of_modifiers()`, `is_subset_of(...)` ve `control`, `alt`, `shift`, `platform`, `function` alanları — bu dört olay üzerinde doğrudan çağrılabilir. "Keystroke, Modifiers ve Platform Bağımsız Kısayollar" başlığındaki kısayollar (`Modifiers::command_shift()` vb.) ise `Modifiers` üzerinde **inherent associated function**'dır; olay üzerinden çağrılmaz, ayrı bir `Modifiers` üretmek için kullanılır.
 
-`MouseDownEvent`, `MouseUpEvent` ve `MouseMoveEvent` Deref **etmez**; yalnız `modifiers: Modifiers` alanını ifşa eder. Bu nedenle bu üç event'te `event.modifiers.secondary()` yazılır; dört Deref'li event'te ise hem `event.modifiers.secondary()` hem `event.secondary()` çalışır. Asimetri kasıtlıdır: Deref'li dörtlü "girdinin modifier şapkası budur" semantiğini taşır; fare press/move event'leri ise modifier'ı yalnız yan veri olarak saklar.
+`MouseDownEvent`, `MouseUpEvent` ve `MouseMoveEvent` Deref **etmez**; yalnız `modifiers: Modifiers` alanını ifşa eder. Bu nedenle bu üç olayda `event.modifiers.secondary()` yazılır; dört Deref'li olayda ise hem `event.modifiers.secondary()` hem `event.secondary()` çalışır. Asimetri kasıtlıdır: Deref'li dörtlü "girdinin modifier şapkası budur" semantiğini taşır; fare press/move olayları ise modifier'ı yalnız yan veri olarak saklar.
 
 #### Görsel, SVG ve Önbellek Taşıyıcıları
 
@@ -384,11 +384,11 @@ Platform uygulaması veya başsız renderer yazılmadığı sürece aşağıdaki
   - `SchedulerForegroundExecutor` — `gpui::executor.rs:10` `pub use scheduler::ForegroundExecutor as SchedulerForegroundExecutor` yeniden dışa aktarımıdır. GPUI tarafındaki `ForegroundExecutor` bunun üzerinde bir sarmalayıcıdır; ham scheduler handle'ına `ForegroundExecutor::scheduler_executor()` (`executor.rs:369`) çağrısıyla inilir, `BackgroundExecutor::scheduler_executor()` de paralel `scheduler::BackgroundExecutor` döner. Uygulama kodu genelde `cx.foreground_executor()` veya `cx.background_executor()` kullanır; scheduler handle yalnız scheduler crate'iyle doğrudan etkileşim gerektiğinde çekilir.
 - Metin ve klavye: `PlatformTextSystem`, `NoopTextSystem`, `PlatformKeyboardLayout`, `PlatformKeyboardMapper`, `DummyKeyboardMapper`, `PlatformInputHandler`.
 - GPU atlas: `PlatformAtlas`, `AtlasKey`, `AtlasTextureList<T>`, `AtlasTile`, `AtlasTextureId`, `AtlasTextureKind`, `TileId`.
-- Headless ve screen capture: `PlatformHeadlessRenderer`, `scap_screen_sources(...)`.
+- Başsız ve ekran yakalama: `PlatformHeadlessRenderer`, `scap_screen_sources(...)`.
 - Test platformu: `TestDispatcher`, `TestScreenCaptureSource`, `TestScreenCaptureStream`, `TestWindow`.
 - İç scheduler: `PlatformScheduler` modül içinde genel olsa da crate kökünden normal uygulama API'si olarak export edilen bir yüzey değildir.
 
-Bu tiplerin doğru sahibi `gpui_platform` uygulamalarıdır. Zed uygulama katmanında genellikle `cx.platform()`, `cx.text_system()`, `cx.svg_renderer()`, `window.drop_image(...)`, `window.input_latency_snapshot()` veya "Headless, Screen Capture ve Test Renderer" başlığındaki API'ler üzerinden dolaylı erişim sağlanır.
+Bu tiplerin doğru sahibi `gpui_platform` uygulamalarıdır. Zed uygulama katmanında genellikle `cx.platform()`, `cx.text_system()`, `cx.svg_renderer()`, `window.drop_image(...)`, `window.input_latency_snapshot()` veya "Başsız Çalışma, Ekran Yakalama ve Test Çizim Aracı" başlığındaki API'ler üzerinden dolaylı erişim sağlanır.
 
 #### Scene, Primitive ve Crate-İçi Arena Taşıyıcıları
 
@@ -478,10 +478,10 @@ Doğrudan kullanıcı akışında nadiren görünen genel yardımcılar:
 
 `target/doc/gpui/all.html` altında ayrı listelenen sabitler:
 
-- `DEFAULT_WINDOW_SIZE = 1536x1095` — `WindowOptions.window_bounds` verilmediğinde default placement için kullanılan ana pencere boyutu.
+- `DEFAULT_WINDOW_SIZE = 1536x1095` — `WindowOptions.window_bounds` verilmediğinde varsayılan yerleşim için kullanılan ana pencere boyutu.
 - `DEFAULT_ADDITIONAL_WINDOW_SIZE = 900x750` — ayarlar veya rules library gibi ek işlevsel pencereler için önerilen minimum oranlı boyut.
 - `KEYSTROKE_PARSE_EXPECTED_MESSAGE` — `InvalidKeystrokeError` mesajının "beklenen modifier + key" açıklaması.
-- `LOADING_DELAY = 200ms` — `img()` elementinin loading state'i göstermeden önce beklediği süre.
+- `LOADING_DELAY = 200ms` — `img()` elementinin yükleme durumunu göstermeden önce beklediği süre.
 - `MAX_BUTTONS_PER_SIDE = 3` — `WindowButtonLayout` içinde bir tarafta tutulabilecek yerel kontrol butonu slot sayısı.
 - `SHUTDOWN_TIMEOUT = 100ms` — `Context::on_app_quit` future'larının app quit sırasında çalışabileceği süre.
 - `SMOOTH_SVG_SCALE_FACTOR = 2.0` — SVG'leri daha yumuşak raster etmek için kullanılan yüksek çözünürlük scale'i.

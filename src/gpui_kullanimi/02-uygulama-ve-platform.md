@@ -34,7 +34,7 @@ fn main() {
 - Linux/FreeBSD: `gpui_linux::current_platform(headless)`; Wayland veya X11 arka ucu platform crate'i içinde seçilir.
 - Web/WASM: `gpui_web::WebPlatform`
 
-Görsel olmayan senaryolar için ayrı bir başlatıcı vardır: `gpui_platform::headless()`, test ve başsız (`headless`) çalıştırma için pencere açmayan bir platform üretir. Test desteği gerektiğinde `gpui_platform::current_headless_renderer()` çağrılır; şu anda yalnızca macOS'ta Metal başsız render aracı döner, diğer hedeflerde `None` gelir.
+Görsel olmayan senaryolar için ayrı bir başlatıcı vardır: `gpui_platform::headless()`, test ve başsız (`headless`) çalıştırma için pencere açmayan bir platform üretir. Test desteği gerektiğinde `gpui_platform::current_headless_renderer()` çağrılır; şu anda yalnızca macOS'ta Metal başsız çizim aracı döner, diğer hedeflerde `None` gelir.
 
 ## Application Yaşam Döngüsü ve Platform Olayları
 
@@ -74,7 +74,7 @@ app.run(|cx| {
 
 - `cx.on_keyboard_layout_change(...)` — klavye düzeni değiştiğinde tetiklenir.
 - `cx.keyboard_layout()` ve `cx.keyboard_mapper()` — keystroke'ları action'lara eşlemek için gerekli verileri sağlar.
-- `cx.thermal_state()` ve `cx.on_thermal_state_change(...)` — yoğun render, dizinleme veya arka plan işlerinin kısıtlama (`throttling`) kararlarında kullanılır.
+- `cx.thermal_state()` ve `cx.on_thermal_state_change(...)` — yoğun çizim, dizinleme veya arka plan işlerinin kısıtlama (`throttling`) kararlarında kullanılır.
 - `cx.set_cursor_hide_mode(CursorHideMode::...)` — yazım veya action sonrasında imleci gizleme politikasını ayarlar.
 - `cx.refresh_windows()` — tüm pencereleri tek bir etki döngüsü (`effect cycle`) içinde yeniden çizmeye zorlar.
 - `cx.set_quit_mode(mode)` — çıkış politikasını çalışma zamanında değiştirir; builder tarafındaki `.with_quit_mode(...)` ile aynı alanı besler.
@@ -112,7 +112,7 @@ app.run(|cx| {
 
 - `window.on_window_should_close(cx, |window, cx| -> bool)` — kullanıcı kapatma butonuna bastığında çalışır; `false` döndürmek kapanışı iptal eder.
 - `window.appearance()`, `window.observe_window_appearance(...)` — pencere görünüm modunu (light/dark vb.) okur ve değişimini dinler.
-- `window.tabbed_windows()`, `window.set_tabbing_identifier(...)` ve diğer yerel pencere sekmesi API'leri ("Native Window Tabs ve SystemWindowTabController" bölümüne bakın).
+- `window.tabbed_windows()`, `window.set_tabbing_identifier(...)` ve diğer yerel pencere sekmesi API'leri ("Yerel Pencere Sekmeleri ve SystemWindowTabController" bölümüne bakın).
 
 Yeni bir platform portu veya test arka ucu yazıldığında bu sözleşmelerin tamamı karşılanmalıdır. Normal uygulama geliştirirken ise trait'lerin kendisine değil, `App` ve `Window` sarmalayıcılarına dokunmak tercih edilir. Böylece platform farklarını sarmalayıcı katmanı üstlenir.
 
@@ -147,7 +147,7 @@ Uygulama kodu `Platform` veya `PlatformWindow` trait'lerini doğrudan çağırma
 - `PlatformWindow::map_window`, Linux'ta `map` ve `show` ayrımı için vardır; uygulama kodunda doğrudan çağrılmaz, `WindowOptions.show` ve pencere sarmalayıcısının davranışı bu işi karşılar.
 - Trait üzerinde varsayılan metot "desteklenmiyor" anlamına gelir; sarmalayıcı üzerinden dönen `None` veya işlem yapmayan (`no-op`) sonuçlar, o platformun yeteneksizliği olarak değerlendirilmelidir.
 
-## Başsız Çalışma, Ekran Yakalama ve Test Render Aracı
+## Başsız Çalışma, Ekran Yakalama ve Test Çizim Aracı
 
 Görsel arayüz olmadan da GPUI uygulaması başlatılabilir. Bu yol özellikle CLI alt komutları, toplu işler, sunucu süreçleri ve başarım ölçüm (`benchmark`) senaryoları için kullanılır. İlgili modüller `crates/gpui/src/platform.rs::screen_capture_sources` ve `crates/gpui_platform/src/gpui_platform.rs::headless()` içinde yer alır.
 
@@ -155,11 +155,11 @@ Başsız bir uygulama şu biçimde başlatılır:
 
 ```rust
 gpui_platform::headless().run(|cx: &mut App| {
-    // Arka plan görevleri, asset yükleme, ağ IO; render yok.
+    // Arka plan görevleri, asset yükleme, ağ IO; çizim yok.
 });
 ```
 
-Bu yapı pencere açmaz, dolayısıyla görsel doğrulama veya ekran görüntüsü (`screenshot`) üretimi için uygun değildir. UI testi gerektiğinde `gpui_platform::headless` yerine `HeadlessAppContext` veya `VisualTestContext` kullanılır. `gpui_platform::current_headless_renderer()` ise yalnızca `test-support` özelliği (`feature`) altında derlenir; şu anda macOS'ta Metal başsız render aracı döndürebilir, diğer platformlarda `None` gelebilir.
+Bu yapı pencere açmaz, dolayısıyla görsel doğrulama veya ekran görüntüsü (`screenshot`) üretimi için uygun değildir. UI testi gerektiğinde `gpui_platform::headless` yerine `HeadlessAppContext` veya `VisualTestContext` kullanılır. `gpui_platform::current_headless_renderer()` ise yalnızca `test-support` özelliği (`feature`) altında derlenir; şu anda macOS'ta Metal başsız çizim aracı döndürebilir, diğer platformlarda `None` gelebilir.
 
 **Ekran yakalama API'si.** Ekran yakalama akışı `oneshot` kanallar üzerinde kurulur ve ekran kareleri bir geri çağrıya iletilir:
 
@@ -186,6 +186,6 @@ if let Some(source) = sources.first() {
 
 - macOS'ta `Screen Recording` izni kullanıcı onayı gerektirir; ilk çağrıda sistem bir izin penceresi açar, onaydan sonra ileriki çalıştırmalarda da izin geçerli kalır.
 - Bazı platformlarda ekran yakalama desteklenmez; `is_screen_capture_supported()` `false` dönebilir veya kaynak listesi boş gelebilir. Bu durum uygulama tarafında kullanıcıya açıklayıcı bir mesajla ele alınmalıdır.
-- UI testlerinde gerçek bir platform penceresi açmak yerine `TestAppContext`, `VisualTestContext` veya render aracı fabrikası verilen `HeadlessAppContext` tercih edilir; bu sayede testler CI ortamlarında ekran olmadan da çalışır.
+- UI testlerinde gerçek bir platform penceresi açmak yerine `TestAppContext`, `VisualTestContext` veya çizim aracı fabrikası verilen `HeadlessAppContext` tercih edilir; bu sayede testler CI ortamlarında ekran olmadan da çalışır.
 
 ---

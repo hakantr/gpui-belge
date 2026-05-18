@@ -169,7 +169,7 @@ pub trait PickerDelegate: Sized + 'static {
 - `menu::SelectNext`, `menu::SelectPrevious`, `menu::SelectFirst`, `menu::SelectLast`, `menu::Cancel`, `menu::Confirm`, `menu::SecondaryConfirm`, `picker::ConfirmCompletion` ve `picker::ConfirmInput` action'larını dinler.
 - Tıklama onayı sırasında `cx.stop_propagation()` ve `window.prevent_default()` çağrılır; bu sayede picker satırına tıklama dış elementlere sızmaz.
 
-**`PickerPopoverMenu`.** Bu sarmalayıcı, bir picker'ı `ui::PopoverMenu` içine yerleştiren ince bir yapıdır. `new(picker, trigger, tooltip, anchor, cx)` picker'ın `DismissEvent`'ini popover dismiss event'ine bağlar; `with_handle(...)` ve `offset(...)` ile dış popover handle ve konum ayarı yapılır. Picker bir toolbar butonu veya popover tetikleyicisi arkasında açılacaksa doğrudan modal yerine bu sarmalayıcı tercih edilir.
+**`PickerPopoverMenu`.** Bu sarmalayıcı, bir picker'ı `ui::PopoverMenu` içine yerleştiren ince bir yapıdır. `new(picker, trigger, tooltip, anchor, cx)` picker'ın `DismissEvent`'ini popover dismiss olayına bağlar; `with_handle(...)` ve `offset(...)` ile dış popover handle ve konum ayarı yapılır. Picker bir toolbar butonu veya popover tetikleyicisi arkasında açılacaksa doğrudan modal yerine bu sarmalayıcı tercih edilir.
 
 **Zed picker örneklerinde güncel kullanım notları.** `file_finder` artık `path:line-column` sorgularına ek olarak `path:start-end` satır aralıklarını da anlar. Örneğin `src/app.rs:12-20` dosyayı açıp ilgili satır aralığını seçer; aralık dosya sonunu aşarsa EOF'a kırpılır. Geçersiz veya ters aralıklar `PathWithPosition` davranışına düşer ve tek konuma gider. Sonda kalan tek satır iki noktası `path:12:` biçiminde temizlenir, fakat aralık biçimleri korunur.
 

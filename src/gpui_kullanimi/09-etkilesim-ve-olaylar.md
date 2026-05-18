@@ -4,7 +4,7 @@
 
 ## Klavye Odağı, Odak Kaybı ve Klavye Olayları
 
-Klavye odağı GPUI'de `FocusHandle` ile temsil edilir. Bir view'un odak alıp verebilmesi için kendine ait bir handle tutması ve render sırasında bu handle'ı elemente bağlaması gerekir.
+Klavye odağı GPUI'de `FocusHandle` ile temsil edilir. Bir view'un odak alıp verebilmesi için kendine ait bir handle tutması ve çizim sırasında bu handle'ı elemente bağlaması gerekir.
 
 ```rust
 struct View {
@@ -20,7 +20,7 @@ impl View {
 }
 ```
 
-Render zincirinde handle element'e bağlanır; isteğe bağlı olarak `focus-visible` stili eklenir:
+Çizim zincirinde handle element'e bağlanır; isteğe bağlı olarak `focus-visible` stili eklenir:
 
 ```rust
 div()
@@ -130,8 +130,8 @@ where
 ```
 
 - `value: T` — sürükleme yükünün (`payload`) tipidir; alıcı tarafta `on_drop::<T>` ile aynı tipe bağlanır.
-- `constructor` — her sürükleme başlangıcında hayalet view üretir; fare uzaklığını yüke göre konumlandırır.
-- `W: Render` — hayaletin kendi entity'sidir; standart render gibi davranır.
+- `constructor` — her sürükleme başlangıcında hayalet view üreten yapıcıdır; fare uzaklığını yüke göre konumlandırır.
+- `W: Render` — hayaletin kendi entity'sidir; standart çizim gibi davranır.
 
 **Bırakma tarafı.** Alıcı element kabul edilebilirlik kontrolünü, stilini ve dinleyicisini ayrı ayrı tanımlar:
 
@@ -181,7 +181,7 @@ div()
 
 - Sürüklenen tip `T: 'static` olmalıdır; ödünç alma süresi (`lifetime`) taşıyan tipler kabul edilmez.
 - Aynı element üzerinde `on_drag` iki kez çağrıldığında `panic` oluşur ("calling on_drag more than once on the same element is not supported").
-- Hayalet view her sürüklemede yeni bir `cx.new(...)` ile yaratılır; constructor içinde yan etkiden kaçınılır.
+- Hayalet view her sürüklemede yeni bir `cx.new(...)` ile yaratılır; yapıcı içinde yan etkiden kaçınılır.
 - `can_drop` `false` döndüğünde `drag_over` ve `group_drag_over` stilleri uygulanmaz, `on_drop` çağrılmaz. Kabul edilmeyen hedef için ayrı bir görsel geri bildirim gösterilecekse `on_drag_move` kullanılır.
 
 ## Hitbox, İmleç, İşaretçi Yakalama ve Otomatik Kaydırma
@@ -291,12 +291,12 @@ window.invalidate_character_coordinates();
 
 Zed'de form tipindeki tek satırlık girdi için doğrudan düzenleyici yazmak yerine `ui_input::InputField` kullanılır. Bu crate, düzenleyiciye (`editor`) bağlı olduğu için `ui` içinde değildir.
 
-**`ui_input` public yüzeyi.** Public API üzerinde aşağıdaki öğeler bulunur:
+**`ui_input` genel yüzeyi.** Genel API üzerinde aşağıdaki öğeler bulunur:
 
 - `pub use input_field::*`; ana bileşen `InputField`.
 - `InputField::new(window, cx, placeholder_text)`, tek satırlık bir düzenleyici nesnesi ister ve yer tutucuyu (`placeholder`) hemen düzenleyiciye yazar.
 - Builder ve metot zinciri: `.start_icon(IconName)`, `.label(...)`, `.label_size(LabelSize)`, `.label_min_width(Length)`, `.tab_index(isize)`, `.tab_stop(bool)`, `.masked(bool)`, `.is_empty(cx)`, `.editor()`, `.text(cx)`, `.clear(window, cx)`, `.set_text(text, window, cx)`, `.set_masked(masked, window, cx)`.
-- `InputFieldStyle`, public bir struct olarak görünür ancak alanları private'dır; dışarıdan stil üzerine yazma sözleşmesi değil, render içi tema anlık görüntüsüdür.
+- `InputFieldStyle`, `pub` bir struct olarak görünür ancak alanları private'dır; dışarıdan stil üzerine yazma sözleşmesi değil, çizim içi tema anlık görüntüsüdür.
 - `ErasedEditor` trait'i düzenleyici köprüsüdür; `text`, `set_text`, `clear`, `set_placeholder_text`, `move_selection_to_end`, `set_masked`, `focus_handle`, `subscribe`, `render`, `as_any` metotlarını içerir.
 - `ErasedEditorEvent::{BufferEdited, Blurred}`, picker veya arama gibi üst bileşenlerin düzenleme ve odak kaybı akışını dinlemesi için yayınlanır.
 - `ERASED_EDITOR_FACTORY: OnceLock<fn(&mut Window, &mut App) -> Arc<dyn ErasedEditor>>`, düzenleyici crate'i tarafından kurulur. Zed'de `crates/editor/src/editor.rs` init akışında bu fabrika, `Editor::single_line(window, cx)` döndüren `ErasedEditorImpl` ile atanır. Fabrika atanmamışken `InputField::new` `panic` üretir; bu nedenle uygulama init sırası, düzenleyici kurulumu tamamlandıktan sonra `InputField` üretimine güvenmelidir.

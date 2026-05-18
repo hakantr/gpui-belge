@@ -62,7 +62,7 @@ let border = colors.border;
 
 **Kalıcılaştırılan örnekler.** Zed'in farklı katmanları farklı kalıcılık mekanizmalarını kullanır:
 
-- Pencere bounds (bkz. "Pencere Sınırlarının Saklanması ve Geri Yüklenmesi" başlığı).
+- Pencere sınırları (bkz. "Pencere Sınırlarının Saklanması ve Geri Yüklenmesi" başlığı).
 - Açık projeler ve yakın zamanlı: `crates/recent_projects`.
 - Workspace serileştirme: `crates/workspace/src/persistence.rs` ve `db` crate'i (SQLite tabanlı).
 - Vim modu, panel boyutları ve dock durumu: workspace serileştirme.

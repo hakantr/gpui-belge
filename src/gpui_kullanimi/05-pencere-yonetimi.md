@@ -4,7 +4,7 @@
 
 ## Pencere Oluşturma
 
-GPUI'de pencereyi açan ana API `cx.open_window(options, root_builder)`'dır. İlk parametre, pencerenin başlangıç davranışını anlatan `WindowOptions`; ikincisi ise pencerenin root view'unu kuran closure'dır. Tipik kullanım şu kalıbı izler:
+GPUI'de pencereyi açan ana API `cx.open_window(options, root_builder)`'dır. İlk parametre, pencerenin başlangıç davranışını anlatan `WindowOptions`; ikincisi ise pencerenin kök view'unu kuran closure'dır. Tipik kullanım şu kalıbı izler:
 
 ```rust
 let handle = cx.open_window(
@@ -56,7 +56,7 @@ let handle = cx.open_window(
 2. `platform_window.set_background_appearance(window_background)` çağrılır.
 3. Pencere sınırları `Fullscreen` ise tam ekran, `Maximized` ise yakınlaştırma uygulanır.
 4. Platform geri çağrıları bağlanır.
-5. İlk render gerçekleştirilir.
+5. İlk çizim gerçekleştirilir.
 
 ## Zed'de Ana Pencere Nasıl Açılır?
 
@@ -182,7 +182,7 @@ Zed settings tipi `settings_content::workspace::WindowDecorations` yalnızca `cl
 
 ## Özel Başlık Çubuğu Nasıl Tanımlanır?
 
-Basit bir GPUI uygulamasında yerel başlık çubuğu kapatılır ve özel başlık çubuğu root view içine yerleştirilir:
+Basit bir GPUI uygulamasında yerel başlık çubuğu kapatılır ve özel başlık çubuğu kök view içine yerleştirilir:
 
 ```rust
 cx.open_window(
@@ -194,7 +194,7 @@ cx.open_window(
 )?;
 ```
 
-Root view içinde özel başlık çubuğu şu kalıpta çizilir:
+Kök view içinde özel başlık çubuğu şu kalıpta çizilir:
 
 ```rust
 div()
@@ -249,7 +249,7 @@ Zed'in başlık çubuğu davranışında dikkat çeken iki ayrıntı vardır:
 Pencere kontrol butonları her platformda farklı çizilir; doğru bileşen seçildiği sürece çizim ayrıntıları kullanıcının önüne çıkmaz:
 
 - macOS: yerel traffic light kullanılır; Zed yalnızca iç boşluk ve `traffic_light_position` değerini ayarlar.
-- Windows: `platform_title_bar::platforms::platform_windows::WindowsWindowControls`, başlık butonlarını render eder; her buton `WindowControlArea` üzerinden yerel çarpışma testi alanına bağlanır.
+- Windows: `platform_title_bar::platforms::platform_windows::WindowsWindowControls`, başlık butonlarını çizer; her buton `WindowControlArea` üzerinden yerel çarpışma testi alanına bağlanır.
 - Linux: `platform_title_bar::platforms::platform_linux::LinuxWindowControls`, `WindowButtonLayout` ve `WindowControls` bilgilerine göre kapatma, küçültme ve ekranı kaplama butonlarını çizer.
 
 Sol ve sağ kontrolleri hazır çizmek için iki yardımcı fonksiyon vardır:
@@ -316,7 +316,7 @@ Linux'ta sunucu tarafı süslemesi her zaman mümkün olmayabilir:
 - Wayland'de compositor süsleme protokolü sağlamazsa sunucu isteği istemciye düşürülür.
 - X11'de compositor olmadığında istemci tarafı süslemesi sunucuya düşebilir.
 
-Bu nedenle pencere açılırken istenen kip değil, her render'da alınan fiili `window.window_decorations()` sonucu esas alınır.
+Bu nedenle pencere açılırken istenen kip değil, her çizimde alınan fiili `window.window_decorations()` sonucu esas alınır.
 
 ## Platforma Göre Süsleme Davranışı
 
@@ -389,13 +389,13 @@ Desteklenen setting değerleri `opaque`, `transparent` ve `blurred`'dir. `MicaBa
 - Tema rafine edilirken `WindowBackgroundContent` -> `WindowBackgroundAppearance` dönüştürülür.
 - Ana pencere açılırken `window_background: cx.theme().window_background_appearance()` verilir.
 - Ayarlar veya tema değiştiğinde `crates/zed/src/main.rs`, tüm açık pencerelere `window.set_background_appearance(background_appearance)` çağrısı yapar.
-- UI tarafında public yol `ui::theme_is_transparent(cx)`'tir; şeffaf veya bulanıksa `true` döner. Opak arka plan varsayan bileşenler buna göre davranmalıdır.
+- UI tarafında genel yol `ui::theme_is_transparent(cx)`'tir; şeffaf veya bulanıksa `true` döner. Opak arka plan varsayan bileşenler buna göre davranmalıdır.
 
 **Platform davranışı.** Aynı enum değeri her platformda farklı bir mekanizmayla ifade edilir:
 
 - macOS:
   - `Opaque`, pencereyi opak yapar.
-  - `Transparent` ve `Blurred` için render aracı şeffaflığı açılır.
+  - `Transparent` ve `Blurred` için çizim aracı şeffaflığı açılır.
   - `Blurred` için `NSVisualEffectView` tabanlı bulanıklık view'u eklenir ya da kaldırılır.
 - Windows:
   - `Opaque`: kompozisyon özniteliği kapatılır.
@@ -407,7 +407,7 @@ Desteklenen setting değerleri `opaque`, `transparent` ve `blurred`'dir. `MicaBa
   - Compositor bulanıklık protokolünü destekliyorsa `Blurred` yüzeye bulanıklık uygulanır.
   - Aksi durumda bulanıklık isteği gözle görülür bir değişiklik üretmeyebilir.
 - X11:
-  - Şeffaf veya bulanık render aracı şeffaflığını etkiler; gerçek arka plan bulanıklığı için pencere yöneticisi veya compositor desteği gereklidir.
+  - Şeffaf veya bulanık çizim aracı şeffaflığını etkiler; gerçek arka plan bulanıklığı için pencere yöneticisi veya compositor desteği gereklidir.
 
 **Pratik karar tablosu.** Hangi değerin nerede tercih edileceği şu şekilde özetlenebilir:
 

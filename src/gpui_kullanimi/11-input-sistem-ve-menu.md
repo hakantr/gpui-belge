@@ -47,7 +47,7 @@ if let Some(item) = cx.read_from_clipboard()
 
 ## Prompt Builder, PromptHandle ve Fallback Prompt
 
-`Window::prompt` platform diyaloğunu açar. Platform prompt'u desteklemiyorsa veya özel bir prompt builder ayarlanmışsa GPUI içinde render edilen prompt kullanılır:
+`Window::prompt` platform diyaloğunu açar. Platform prompt'u desteklemiyorsa veya özel bir prompt builder ayarlanmışsa GPUI içinde çizilen prompt kullanılır:
 
 ```rust
 let response = window.prompt(
@@ -68,12 +68,12 @@ let selected_index = response.await?;
 - `PromptResponse(pub usize)` — özel prompt view'unun seçilen buton indeksini yaydığı olaydır.
 - `Prompt` — `EventEmitter<PromptResponse> + Focusable` trait birleşimidir.
 - `PromptHandle::with_view(view, window, cx)` — özel prompt entity'sini pencereye bağlar, önceki odağı kaydeder ve prompt yanıtında odağı geri verir.
-- `fallback_prompt_renderer(...)` — `set_prompt_builder` ile varsayılan GPUI prompt render'ını zorlamak için kullanılır.
+- `fallback_prompt_renderer(...)` — `set_prompt_builder` ile varsayılan GPUI prompt çizimini zorlamak için kullanılır.
 
 **Zed entegrasyonu** (`crates/ui_prompt`):
 
-- `ui_prompt::init(cx)`, `WorkspaceSettings::use_system_prompts` ayarını `SettingsStore` üzerinden gözlemler. Sistem prompt'ları açıksa `cx.reset_prompt_builder()` çağrılarak platform diyaloğuna düşülür; aksi halde `cx.set_prompt_builder(zed_prompt_renderer)` ile GPUI içindeki markdown destekli prompt akışına geçilir. Linux/FreeBSD'de sistem prompt'u yoksayılır, daima Zed render'ı kullanılır.
-- `ZedPromptRenderer`, public bir struct'tır: `Markdown` entity'siyle mesaj ve detay metnini render eder; cancel ve confirm action'larını içeride yönlendirir. Uygulama kodu doğrudan oluşturmaz; yalnızca prompt builder fonksiyonu tarafından kurulur.
+- `ui_prompt::init(cx)`, `WorkspaceSettings::use_system_prompts` ayarını `SettingsStore` üzerinden gözlemler. Sistem prompt'ları açıksa `cx.reset_prompt_builder()` çağrılarak platform diyaloğuna düşülür; aksi halde `cx.set_prompt_builder(zed_prompt_renderer)` ile GPUI içindeki markdown destekli prompt akışına geçilir. Linux/FreeBSD'de sistem prompt'u yoksayılır, daima Zed çizimi kullanılır.
+- `ZedPromptRenderer`, `pub` bir struct'tır: `Markdown` entity'siyle mesaj ve detay metnini çizer; cancel ve confirm action'larını içeride yönlendirir. Uygulama kodu doğrudan oluşturmaz; yalnızca prompt builder fonksiyonu tarafından kurulur.
 
 **Özel builder.** Tamamen özel bir prompt görsel akışı tanımlamak için builder kayda alınır:
 
@@ -140,7 +140,7 @@ cx.set_menus(vec![
 **Platform davranışı.** Aynı menü modeli her platformda farklı bir kanal üzerinden çizilir:
 
 - macOS'ta yerel `NSMenu` ile çizilir; klavye kısayolları kısayol kayıtlarından okunur.
-- Windows ve Linux, platform durumunu `OwnedMenu` olarak saklar; Zed bu modeli uygulama içi menü ve render katmanlarında kullanır.
+- Windows ve Linux, platform durumunu `OwnedMenu` olarak saklar; Zed bu modeli uygulama içi menü ve çizim katmanlarında kullanır.
 - Linux dock menüsü arka uçta `todo` veya işlem yapmayan (`no-op`) durumdadır; dock veya jump-list davranışı için platforma özel bir yedek akış hazırlanmalıdır.
 
 **Tuzak.** Aynı action birden çok menü öğesine bağlandığında keymap'te tek bir kısayol gösterilir. `os_action` yalnızca macOS yerel düzenleme menüsü eşlemesini etkiler; diğer platformlarda sıradan bir action gibi davranır.
