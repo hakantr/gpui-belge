@@ -181,7 +181,7 @@ Yeni bir pencere eklenirken aşağıdaki kontrol listesi unutulan bir ayrıntı 
 
 1. Bu pencerenin workspace mi, modal mı, popup mu olduğuna karar verilir ve uygun `WindowKind` seçilir.
 2. Ana Zed penceresi ise `build_window_options` kullanılır.
-3. Bounds geri yüklenecekse `WindowBounds` kalıcılaştırılır.
+3. Sınırlar geri yüklenecekse `WindowBounds` kalıcılaştırılır.
 4. Hangi display'de açılacağı belirlenir; `display_id` veya `display_uuid` seçilir.
 5. Başlık çubuğu yerel mi, özel mi olacak? `TitlebarOptions` ile `PlatformTitleBar` arasındaki karar verilir.
 6. Linux dekorasyon modu ayardan geliyorsa `window_decorations` bağlanır.

@@ -88,8 +88,8 @@ Pencere argümanı isteyen yardımcılar `TestAppContext` üzerindeki `simulate_
 `gpui` crate'i `inspector` özelliği ile (veya `debug_assertions` açıkken) derlendiğinde dev tool entegrasyonu sağlar:
 
 - `InspectorElementId` — her element için `(file, line, instance)` tabanlı kimlik.
-- `InspectorElementPath` (`inspector.rs:30`) — bir elementin `GlobalElementId` zincirini ve yapıdan gelen `&'static Location` source location'ını birleştiren kimlik. Element seçildiğinde inspector UI'ı bu path üzerinden kaynak bağlantı gösterir. Hem alanları hem `Clone` impl'i özellik kapısı altındadır.
-- Element source location `#[track_caller]` ile yakalanır ve `InspectorElementPath.source_location` alanına yazılır.
+- `InspectorElementPath` (`inspector.rs:30`) — bir elementin `GlobalElementId` zincirini ve yapıdan gelen `&'static Location` kaynak konumunu (`source location`) birleştiren kimlik. Element seçildiğinde inspector UI'ı bu path üzerinden kaynak bağlantı gösterir. Hem alanları hem `Clone` impl'i özellik kapısı altındadır.
+- Element kaynak konumu `#[track_caller]` ile yakalanır ve `InspectorElementPath.source_location` alanına yazılır.
 - Element seçimi pencerede `Inspector` global durum üzerinden tetiklenir.
 - `Window::toggle_inspector(cx)` inspector panelini açar veya kapatır.
 - `Window::with_inspector_state(...)` aktif elemente özel geçici inspector durumu tutar.
@@ -127,7 +127,7 @@ Pencere argümanı isteyen yardımcılar `TestAppContext` üzerindeki `simulate_
 **Diğer hata ayıklama yardımcıları.** Inspector dışında küçük yardımcılar da mevcuttur:
 
 - `div().debug_selector(|| "my-button")` — test ve inspector'da seçici atar.
-- `crates/gpui/src/profiler.rs` — executor task timing buffer'ları; runtime'da `gpui::profiler::set_enabled(true)` ile açılır ve thread timing delta'ları `ProfilingCollector` ile okunur.
+- `crates/gpui/src/profiler.rs` — executor task timing buffer'ları; çalışma zamanında `gpui::profiler::set_enabled(true)` ile açılır ve thread timing delta'ları `ProfilingCollector` ile okunur.
 - `RUST_LOG=gpui=debug` ile olay/key dispatch log seviyesi yükselir.
 - `debug_selector` değerleri testte `VisualTestContext::debug_bounds(selector)` üzerinden okunur; üretim kaplaması için ayrı bir env bayrağı gerekir.
 
@@ -156,7 +156,7 @@ Zed'in `workspace` ve `ui` katmanlarında sık görülen bazı `Window` çağrı
 
 - `window.modifiers() -> Modifiers` — o an basılı modifier'ları verir. Zed'de Shift/Alt/Ctrl ile notification suppress, pane clone veya quick action preview davranışı değiştirmek için kullanılır.
 - `window.capslock() -> Capslock` — capslock durumunu okur.
-- `window.mouse_position() -> Point<Pixels>` — işaretçinin pencere içi konumu. Context menu ve right-click menu konumlandırmasında doğrudan kullanılır.
+- `window.mouse_position() -> Point<Pixels>` — işaretçinin pencere içi konumu. Bağlam menüsü ve right-click menu konumlandırmasında doğrudan kullanılır.
 - `window.last_input_was_keyboard() -> bool` — focus-visible kararlarında ana sinyaldir; işaretçi ile odaklanan elemente gereksiz odak halkası çizmemek için.
 - `window.is_window_hovered() -> bool` — tooltip, popover veya hover kaplaması pencere dışına çıktığında kapatmak gibi durumlarda kullanılır.
 
@@ -166,7 +166,7 @@ Zed'in `workspace` ve `ui` katmanlarında sık görülen bazı `Window` çağrı
 - `window.request_layout(style, children, cx) -> LayoutId` — özel elementin taffy yerleşim ağacına node eklemesidir.
 - `window.request_measured_layout(style, measure) -> LayoutId` — metin veya dinamik ölçüm gerektiren elementlerde yerleşim zamanında ölçüm closure'ı sağlar.
 - `window.compute_layout(layout_id, available_space, cx)` — verilen yerleşim node'u için hesaplamayı tetikler.
-- `window.layout_bounds(layout_id) -> Bounds<Pixels>` — hesaplanan bounds'u pencere koordinatlarında döndürür. Popover ve right-click menu gibi bileşenler anchor bounds'ı öğrenmek için bunu prepaint sırasında okur.
+- `window.layout_bounds(layout_id) -> Bounds<Pixels>` — hesaplanan sınırları (`bounds`) pencere koordinatlarında döndürür. Popover ve right-click menu gibi bileşenler anchor sınırlarını öğrenmek için bunu prepaint sırasında okur.
 - `window.pixel_snap(...)`, `pixel_snap_f64(...)`, `pixel_snap_point(...)`, `pixel_snap_bounds(...)` — mantıksal pikseli cihaz piksel grid'ine hizalar. İnce çizgi, indent guide ve kaplama kenarlıklarında bulanıklığı azaltmak için kullanılır.
 
 **Kare zamanlama araçları.** Aynı kare yerine sonraki kareye iş taşımak için üç ana yardımcı grubu vardır:
@@ -185,7 +185,7 @@ window.defer(cx, |window, cx| {
 });
 ```
 
-- `window.on_next_frame(...)` — mevcut kare tamamlandıktan sonraki karede çalışır. Yerleşim sonucu, hitbox veya popover konumu bir kare sonra bilinecekse doğru araçtır. Zed UI'da bazı menü konumlandırmaları iki kez `on_next_frame` kullanır; ilk kare anchor veya yerleşim bilgisini, ikinci kare menu entity'sinin kendi bounds'unu stabilize eder.
+- `window.on_next_frame(...)` — mevcut kare tamamlandıktan sonraki karede çalışır. Yerleşim sonucu, hitbox veya popover konumu bir kare sonra bilinecekse doğru araçtır. Zed UI'da bazı menü konumlandırmaları iki kez `on_next_frame` kullanır; ilk kare anchor veya yerleşim bilgisini, ikinci kare menü entity'sinin kendi sınırlarını stabilize eder.
 - `Context<T>::on_next_frame(window, |this, window, cx| ...)` — aynı işin o anki entity'ye bağlı yardımcısıdır; geri çağrı içine entity update context'i gelir.
 - `window.request_animation_frame()` — sürekli animasyon, GIF veya animasyonlu görsel için yeni kare ister. Bir view içinde çağrıldığında o anki view'i sonraki karede bildirir.
 - `cx.defer(...)`, `window.defer(cx, ...)`, `cx.defer_in(window, ...)` — mevcut etki döngüsü bittikten sonra çalışır. Entity zaten update stack'inde olduğunda reentrant update panic'inden kaçınmak ya da focus/menu dispatch'ini stack boşalınca yapmak için kullanılır. Yerleşim ölçümü gerektiğinde `defer` yerine `on_next_frame` tercih edilir.
@@ -195,7 +195,7 @@ window.defer(cx, |window, cx| {
 - `window.insert_window_control_hitbox(area, hitbox)` — paint fazında platform control hitbox'ı kaydeder; Windows özel başlık çubuğunda min, max, close ve drag alanları için kullanılır.
 - `window.set_key_context(context)` — paint fazında o anki dispatch node'una keybinding context bağlar. Element API'deki `.key_context(...)` bunun sarmalayıcısıdır.
 - `window.set_focus_handle(&focus_handle, cx)` — prepaint fazında o anki dispatch node'unu focus handle ile ilişkilendirir. Element API'deki `.track_focus(...)` çoğu uygulama kodunda daha doğru seviyedir.
-- `window.set_view_id(view_id)` — prepaint fazında dispatch veya cache node'una view id bağlar. Kaynak yorumunda kaldırılması planlanan düşük seviyeli bir kaçış yolu olarak işaretlidir; normal view çizim akışında kullanılmamalıdır.
+- `window.set_view_id(view_id)` — prepaint fazında dispatch veya önbellek node'una view id bağlar. Kaynak yorumunda kaldırılması planlanan düşük seviyeli bir kaçış yolu olarak işaretlidir; normal view çizim akışında kullanılmamalıdır.
 - `window.bounds_changed(cx)` — platform resize/move geri çağrısının yaptığı durum yenileme ve gözlemci bildirme işlemini tetikler. Platform/test altyapısı içindir; uygulama kodunda resize simülasyonu dışında çağrılmamalıdır.
 
 ## App/Window Düşük Seviyeli Servisleri: Platform, Metin, Palet ve Atlas

@@ -13,8 +13,8 @@ GPUI, birbirinin üzerine kurulan üç katmandan oluşur. Her katman bir altınd
 Zed bu üç katmanın üstüne kendi tasarım sistemini koyar. Bunlar GPUI'nin parçası değil, GPUI üzerine yazılmış son kullanıcı bileşenleridir:
 
 - `crates/ui` — Button, Icon, Label, Modal, ContextMenu, Tooltip, Tab, Table, Toggle ve benzeri yeniden kullanılan bileşenleri barındırır. Tutarlı bir görsel dil ve davranış kalıbı sağlar; uygulama içindeki ekranlar bu kitten bileşen alarak yapılır.
-- `crates/platform_title_bar` — platforma göre pencere kontrol butonlarını ve başlık çubuğu davranışını çizer. Linux ve Windows tarafında "client-side decoration" gerektiğinde başlık çubuğu da bu paket tarafından üretilir.
-- `crates/workspace` — ana çalışma alanını, client-side decoration gölgesini, pencere köşelerindeki resize bölgelerini ve pencere içeriğini tek bir bütün halinde birleştirir. Uygulamanın iskeleti, panellerin yerleşimi ve pencere kromu burada toplanır.
+- `crates/platform_title_bar` — platforma göre pencere kontrol butonlarını ve başlık çubuğu davranışını çizer. Linux ve Windows tarafında istemci tarafı süslemesi (`client-side decoration`) gerektiğinde başlık çubuğu da bu paket tarafından üretilir.
+- `crates/workspace` — ana çalışma alanını, istemci tarafı süslemesi gölgesini, pencere köşelerindeki resize bölgelerini ve pencere içeriğini tek bir bütün halinde birleştirir. Uygulamanın iskeleti, panellerin yerleşimi ve pencere kromu burada toplanır.
 
 Kısacası alttan yukarıya doğru sıralama "platform → durum → çizim" şeklindedir. Zed bu temelin üstüne kendi UI bileşen setini ekler ve uygulamanın tanıdık görünümünü buradan kurar. İlerleyen bölümler önce bu üç katmanı açar, son bölümler ise Zed'in üst tabakasına döner.
 
@@ -44,8 +44,8 @@ Yani GPUI'de ekranda gördüğünüz şeyler doğrudan bellekte duran nesneler d
 | `WeakEntity<T>` | Entity'yi hayatta tutmayan referans | Async işler, abonelikler veya iki nesnenin birbirini işaret ettiği durumlarda entity'ye geri dönmek için kullanılır; ama entity'yi tek başına canlı tutmaz. | `upgrade` veya `update` başarısız olabilir; çünkü kullanıcı ilgili pencereyi kapatmış ve entity artık silinmiş olabilir. |
 | `Context<T>` | Bir entity üzerinde çalışırken gelen bağlam | `Entity<T>` güncellenirken veya çizim üretilirken `App` yeteneklerine ek olarak `cx.notify()`, `cx.emit(...)`, `cx.observe(...)`, `cx.subscribe(...)`, `cx.spawn(...)` gibi o entity'ye özel metotları açar. | Değişen veri ekrandaki sonucu değiştiriyorsa update sonunda çoğunlukla `cx.notify()` çağrılır. |
 | `EventEmitter<E>` | Entity'nin olay duyurması | Bir entity'nin dışarıya `E` tipinde olaylar yayabileceğini belirtir. Başka kodlar bu olayları dinleyebilir. | Bu, tarayıcıdaki DOM olay sistemi gibi element tıklaması değildir; entity'ler arasında tipli mesajlaşmadır. |
-| `Subscription` | Dinleyici kaydının ömrü | Observe, subscribe veya listener kayıtlarının ne kadar süre yaşayacağını taşır. `Subscription` elden çıkınca dinleme de biter. | Oluşturduğunuz `Subscription`'ı bir değişkende veya entity alanında saklamazsanız dinleyici hemen kapanır. |
-| `Task<T>` | İptal edilebilir async iş | Foreground/background executor'da çalışan future'ı temsil eder. | `Task` değeri elden çıkarsa iş iptal edilir. İşin devam etmesi gerekiyorsa task bir alanda saklanır ya da bilinçli şekilde bağımsız bırakılır. |
+| `Subscription` | Dinleyici kaydının ömrü | `observe`, `subscribe` veya `listener` kayıtlarının ne kadar süre yaşayacağını taşır. `Subscription` elden çıkınca dinleme de biter. | Oluşturduğunuz `Subscription`'ı bir değişkende veya entity alanında saklamazsanız dinleyici hemen kapanır. |
+| `Task<T>` | İptal edilebilir async iş | Ön plan/arka plan executor'ında çalışan future'ı temsil eder. | `Task` değeri elden çıkarsa iş iptal edilir. İşin devam etmesi gerekiyorsa task bir alanda saklanır ya da bilinçli şekilde bağımsız bırakılır. |
 | `AsyncApp` | `await` sonrasına taşınabilen app bağlamı | Async blok içinde `App`'e güvenli şekilde geri dönmeyi sağlar. | `await` sırasında pencere veya entity kapanmış olabilir; bu yüzden async bağlamdaki erişimler çoğu zaman hata döndürebilir. |
 
 ### Pencere ve Kullanıcı Girdisi
@@ -79,9 +79,9 @@ Yani GPUI'de ekranda gördüğünüz şeyler doğrudan bellekte duran nesneler d
 
 | Kavram | Basit karşılık | Ne işe yarar? | İlk okurken dikkat |
 |---|---|---|---|
-| `Pixels` | Mantıksal piksel | Boyut, konum, padding ve bounds değerlerinde kullanılan ana ölçü birimidir. | Fiziksel ekran pikseliyle bire bir aynı olmak zorunda değildir; scale factor devrededir. |
+| `Pixels` | Mantıksal piksel | Boyut, konum, padding ve sınır (`bounds`) değerlerinde kullanılan ana ölçü birimidir. | Fiziksel ekran pikseliyle bire bir aynı olmak zorunda değildir; scale factor devrededir. |
 | `Hsla` / `Rgba` | Renk tipleri | UI renklerini HSLA veya RGBA uzayında taşır. | Zed tarafında çoğu renk doğrudan sabit değil, tema üzerinden gelir. |
-| `Background` | Dolgu tanımı | Düz renk, gradient veya pattern gibi arka plan dolgularını temsil eder. | Renk ile background aynı şey değildir; background daha geniş bir dolgu tarifidir. |
+| `Background` | Dolgu tanımı | Düz renk, gradient veya pattern gibi arka plan dolgularını temsil eder. | Renk ile dolgu aynı şey değildir; dolgu daha geniş bir tariftir. |
 | `AssetSource` | Asset byte kaynağı | SVG, image, font veya paketlenmiş dosya gibi varlıkların nereden okunacağını uygulamaya söyler. | Başlangıçta `Application` üzerinde kurulur; elementler asset isterken bu kaynağa dayanır. |
 
 ### Hangi Kavramı Ne Zaman Aramalıyım?

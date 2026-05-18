@@ -152,14 +152,14 @@ Zed içinde yeni bir UI yazılırken önce `ui` bileşenleri taranır. Aşağıd
 - `Table::pin_cols(n)` ilk `n` kolonu yatay scroll sırasında sabit tutar. `ColumnWidthConfig::Resizable` ile birlikte kullanılır; `n == 0` veya `n >= cols` durumunda tek parçalı yerleşime düşülür. Sabitli yerleşimde başlık ve satırların scroll edilebilir bölümleri ortak `ScrollHandle` ile senkron tutulur.
 - `ResizableColumnsState::drag_to(col_idx, drag_x, rem_size)` test edilebilir, düşük seviyeli yeniden boyutlandırma yüzeyidir. Sabitli yerleşimde drag koordinatı doğal, scroll edilmemiş kolon şeridi koordinatıdır; `on_drag_move` yatay scroll offset'ini bu hesabı yapmak için alır.
 - `ProjectEmptyState::new(label, focus_handle, open_project_key_binding)` ortak boş-proje UI'ıdır. Project panel, Git panel ve Threads sidebar aynı "Open Project / Clone Repository" bileşenini kullanır.
-- `Button::loading(true)` `start_icon` yerine dönen `LoadCircle` spinner'ı çizer. Loading açıkken ayrıca start icon beklenmez; bileşen bunu bilinçli olarak bastırır.
+- `Button::loading(true)` `start_icon` yerine dönen `LoadCircle` yükleme göstergesini çizer. Yükleme durumu açıkken ayrıca başlangıç ikonu beklenmez; bileşen bunu bilinçli olarak bastırır.
 
 **Genel kural.** Yeni UI yazılırken aşağıdaki kararlar tutarlılığı korur:
 
 - Zed içinde ham `div().on_click(...)` ile buton üretmeden önce `Button` veya `IconButton` tercih edilir.
 - Yalnız görsel veya tek seferlik bir parça için `RenderOnce`, stateful view için `Render` kullanılır.
 - Listeler çok büyükse `list` veya `uniform_list` tercih edilir.
-- Tooltip, popover ve context menu için hazır bileşenler kullanılır; odaklanma/odak kaybı kapanma davranışı orada zaten çözülmüştür.
+- Tooltip, popover ve bağlam menüsü için hazır bileşenler kullanılır; odaklanma/odak kaybı kapanma davranışı orada zaten çözülmüştür.
 
 ## ManagedView, DismissEvent, Modal, Popover ve Tooltip Yaşam Döngüsü
 
@@ -169,7 +169,7 @@ Zed içinde yeni bir UI yazılırken önce `ui` bileşenleri taranır. Aşağıd
 pub trait ManagedView: Focusable + EventEmitter<DismissEvent> + Render {}
 ```
 
-Bir modal, popover veya context menu kapatılmak istediğinde kendi entity context'inden `DismissEvent` yayar:
+Bir modal, popover veya bağlam menüsü kapatılmak istediğinde kendi entity context'inden `DismissEvent` yayar:
 
 ```rust
 impl EventEmitter<DismissEvent> for MyModal {}
@@ -183,7 +183,7 @@ fn dismiss(&mut self, cx: &mut Context<Self>) {
 
 - `ContextMenu` — `ManagedView` uygular; komut listesi ve ayırıcı yönetimi için kullanılır.
 - `PopoverMenu<M: ManagedView>` — anchor elementten odaklanılabilen popover açar; `PopoverMenuHandle<M>` dışarıdan toggle veya kapatma için tutulabilir.
-- `right_click_menu(id)` — context menu'yu fare olay akışına bağlayan UI yardımcısıdır.
+- `right_click_menu(id)` — bağlam menüsünü fare olay akışına bağlayan UI yardımcısıdır.
 - Workspace modal katmanı `ModalView` veya `ToastView` gibi katmanlarda `DismissEvent` aboneliği ile kapanmayı yönetir; `on_before_dismiss` varsa kapanmadan önce çağrılır.
 
 **Tooltip.** Tooltip iki ayrı fluent metot üzerinden tanımlanır:

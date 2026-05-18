@@ -11,7 +11,7 @@ Bu bölüm GPUI çekirdeğine değil, Zed'in `workspace` crate'i üstünde duran
 - `panel::PanelHeader` varsayılan `header_height` veya `panel_header_container` sağlayan bir yardımcı trait değildir; `workspace::Panel` üstünde işaretleyici bir trait'tir. Başlık yüksekliği gerekiyorsa doğrudan `Tab::container_height(cx)`, kapsayıcı gerekiyorsa `h_flex()`/`v_flex()` ve `ui::Button`/`ui::IconButton` bileşenleri kurulur.
 - `panel_button`, `panel_filled_button`, `panel_icon_button` ve `panel_filled_icon_button` serbest fonksiyon yardımcıları yoktur. Panel UI'ında buton layer/size/style kararları doğrudan bileşen üzerinde açıkça belirtilir.
 - Git paneli `GitPanelTab::{Changes, History}` durumuyla iki tab çizer. Changes sekmesi staged/unstaged liste ve commit footer akışını taşır; History sekmesi commit geçmişini `UniformListScrollHandle` ile sanallaştırır, ok tuşlarıyla `focused_history_entry` seçer ve confirm ile `CommitView::open` çağırır. Panel action dinleyicilerine `ActivateChangesTab` ve `ActivateHistoryTab` eklenmelidir.
-- Branch diff görünümü toolbar'daki `Base: ...` popover'ı ile diff baz branch'ini değiştirir. Picker `branch_picker::select_popover(...)` üzerinden checkout yapmadan branch seçer, geri çağrı `DiffBase::Merge { base_ref }` ayarlar ve `BranchDiff::set_diff_base` `BranchDiffEvent::DiffBaseChanged` yayar. Ağaç tabanlı merge-base diff hesabı sürerken `is_tree_base_loading()` true döner; boş görünümler bunu spinner ile ayırmalı, eski statik baz varsayımına dönmemelidir.
+- Branch diff görünümü toolbar'daki `Base: ...` popover'ı ile diff baz branch'ini değiştirir. Picker `branch_picker::select_popover(...)` üzerinden checkout yapmadan branch seçer, geri çağrı `DiffBase::Merge { base_ref }` ayarlar ve `BranchDiff::set_diff_base` `BranchDiffEvent::DiffBaseChanged` yayar. Ağaç tabanlı merge-base diff hesabı sürerken `is_tree_base_loading()` true döner; boş görünümler bunu yükleme göstergesiyle ayırmalı, eski statik baz varsayımına dönmemelidir.
 
 **Workspace yapısı.** Workspace üç ana dock'u ve merkezdeki pane grubunu bir arada tutar:
 
@@ -549,14 +549,14 @@ listener.open(RawOpenRequest {
 
 **Tuzaklar.** Open akışı ve global durum ile çalışırken karşılaşılan hatalar:
 
-- Workspace açma akışında `AppState::build_window_options` kullanılır; doğrudan `WindowOptions` kopyalamak Zed'in başlık çubuğu, app id, bounds restore ve platform ayarlarını atlar.
+- Workspace açma akışında `AppState::build_window_options` kullanılır; doğrudan `WindowOptions` kopyalamak Zed'in başlık çubuğu, app id, sınır geri yükleme ve platform ayarlarını atlar.
 - `WorkspaceStore` weak workspace tutar; iterasyon sırasında upgrade başarısız olabilir.
 - `OpenListener::open` dinleyici yokken hatayı loglar; talebin teslim edildiği varsayımıyla kullanıcı akışının başlatılmaması gerekir.
 - DB restore yolunda serializable item kind eksikse item restore edilemez; yeni bir item türü eklenirken `register_serializable_item` startup init'inde çağrılmalıdır.
 
-## Item Ayarları, Context Menu, ApplicationMenu ve Focus-Follows-Mouse
+## Item Ayarları, Bağlam Menüsü, ApplicationMenu ve Focus-Follows-Mouse
 
-Zed UI kodunda sık görülen ama GPUI çekirdeği olmayan birkaç yardımcı katman daha vardır; bunlar item davranışı, context menu, uygulama menüsü ve focus-follows-mouse gibi konuları kapsar.
+Zed UI kodunda sık görülen ama GPUI çekirdeği olmayan birkaç yardımcı katman daha vardır; bunlar item davranışı, bağlam menüsü, uygulama menüsü ve focus-follows-mouse gibi konuları kapsar.
 
 #### Item Ayarları ve SaveIntent
 
@@ -581,17 +581,17 @@ Item ve tab davranışını ayarlar tarafına bağlayan tipler şunlardır:
 - `ContextMenuItem::{Separator, Header, HeaderWithLink, Label, Entry, CustomEntry, Submenu}`.
 - `ContextMenuEntry` label, icon, checked/toggle, action, disabled, secondary handler, documentation aside ve end-slot gibi alanları taşır.
 - `ContextMenu::build(window, cx, |menu, window, cx| ...)` menü entity'sini üretir.
-- `menu.context(focus_handle)` menu action kullanılabilirliği ve keybinding görüntüsü için belirli bir focus context'ini kullanır.
+- `menu.context(focus_handle)` menü action kullanılabilirliği ve keybinding görüntüsü için belirli bir odak bağlamını kullanır.
 
-`PopoverMenu<M: ManagedView>` anchor element ile yönetilen menu view'ini bağlar:
+`PopoverMenu<M: ManagedView>` anchor element ile yönetilen menü view'ini bağlar:
 
 - `PopoverMenu::new(id)`, `.menu(...)`, `.with_handle(handle)`, `.anchor(...)`, `.attach(...)`, `.offset(...)`, `.full_width(...)`, `.on_open(...)`.
-- `PopoverMenuHandle<M>` dışarıdan toggle, kapatma ve açık menu entity'sine erişmek için saklanır.
-- Popover konumlandırması `window.layout_bounds` ve çift `on_next_frame` desenini kullanabilir; anchor bounds ilk karede, menu bounds bir sonraki karede bilinir.
+- `PopoverMenuHandle<M>` dışarıdan toggle, kapatma ve açık menü entity'sine erişmek için saklanır.
+- Popover konumlandırması `window.layout_bounds` ve çift `on_next_frame` desenini kullanabilir; anchor sınırları (`bounds`) ilk karede, menü sınırları bir sonraki karede bilinir.
 
-#### Client-side ApplicationMenu
+#### İstemci Tarafı ApplicationMenu
 
-macOS dışındaki client-side application menü `title_bar::ApplicationMenu` ile çizilir:
+macOS dışındaki istemci tarafı application menüsü `title_bar::ApplicationMenu` ile çizilir:
 
 - `ApplicationMenu::new(window, cx)` `cx.get_menus()` ile platform ve app menülerini okur; her üst seviye menü için bir `PopoverMenuHandle<ContextMenu>` saklar.
 - `OpenApplicationMenu(String)` action'ı belirli menüyü açar.
@@ -613,7 +613,7 @@ element.focus_follows_mouse(WorkspaceSettings::get_global(cx).focus_follows_mous
 
 **Tuzaklar.** Bu yardımcı katmanlarda dikkat edilmesi gerekenler:
 
-- Context menu action'ları odaktaki element context'ine göre enable veya disable olur; menü focus context'i olmadan kurulduğunda bazı action'lar görünür ama çalışmayabilir.
+- Bağlam menüsü action'ları odaktaki element context'ine göre enable veya disable olur; menü odak bağlamı olmadan kurulduğunda bazı action'lar görünür ama çalışmayabilir.
 - ApplicationMenu platform menü çubuğu değildir; macOS yerel menüsü ayrı platform menü akışından gelir.
 - Focus-follows-mouse global debounce durumu kullanır; aynı anda birden çok hover hedefi yarışabilir, bu nedenle daha spesifik alt kontrol kaldırılmamalıdır.
 

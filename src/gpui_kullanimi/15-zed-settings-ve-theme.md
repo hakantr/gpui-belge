@@ -1,4 +1,4 @@
-# Zed Settings ve Theme
+# Zed Ayarları ve Tema
 
 ---
 
@@ -45,7 +45,7 @@ Agent ayar içeriğinde `agent.default_model` yanında `agent.subagent_model: Op
 - `git.path_style` yanında Git UI ve diff görünümü için yeni `git` ayarları okunurken çalışma zamanı `ProjectSettings` modelinin `settings_content` ile senkron tutulduğu kontrol edilmelidir; varsayılan JSON'a eklenmeyen alan `from_settings` içinde beklenmedik bir varsayılana düşer.
 - Ayarlar UI'sındaki aramada sorgu boşken sonuç üretilmez ve sorgudaki kelimelerin tamamının aday ayar ile eşleşmesi gerekir. Kendi ayar panelinizde Zed davranışına paralel kalmak için kelimelerden herhangi birinin eşleşmesini yeterli sayan eski arama mantığını kullanmayın.
 
-**Completion menu API yüzeyi.** Completion akışında dikkat edilecek iki nokta vardır:
+**Tamamlama menüsü API yüzeyi.** Tamamlama akışında dikkat edilecek iki nokta vardır:
 
 - `CompletionsMenu::entries` doğrudan `Box<[StringMatch]>` değil, `CompletionMenuEntry::{Match, Divider, GroupHeader}` dizisidir. Test veya UI kodu entry'lerden completion adayına erişirken `entry.as_match()` kullanmalıdır.
 - `project::Completion` üreticileri `group: Option<CompletionGroup>` alanını doldurmalıdır; grup değiştiğinde menu divider ve isteğe bağlı bir grup başlığı eklenir.
@@ -171,12 +171,12 @@ pub fn reload_theme(cx: &mut App) {
 }
 ```
 
-`reload_icon_theme(cx)` aynı modeli icon theme için uygular. `theme::init(...)` registry'yi, `SystemAppearance`'ı, font ailesi önbelleğini ve yedek `GlobalTheme`'i kurar; `theme_settings::init(...)` bunun üstüne ayar gözlemcilerini ve paketlenmiş/kullanıcı tema yükleme akışını bağlar.
+`reload_icon_theme(cx)` aynı modeli ikon teması için uygular. `theme::init(...)` registry'yi, `SystemAppearance`'ı, font ailesi önbelleğini ve yedek `GlobalTheme`'i kurar; `theme_settings::init(...)` bunun üstüne ayar gözlemcilerini ve paketlenmiş/kullanıcı tema yükleme akışını bağlar.
 
-**Tema ayar sağlayıcısı.** Theme crate'i font ve density bilgisini ayrı bir sağlayıcı üzerinden okur; bu sayede kendi içinde somut settings crate'ine bağımlı olmaz:
+**Tema ayar sağlayıcısı.** Theme crate'i font ve density bilgisini ayrı bir sağlayıcı üzerinden okur; bu sayede kendi içinde somut ayarlar crate'ine bağımlı olmaz:
 
 - `theme::set_theme_settings_provider(provider, cx)` — UI font, buffer font, font size ve UI density kaynağını global olarak bağlar.
-- `theme::theme_settings(cx) -> &dyn ThemeSettingsProvider` — theme crate'inin somut settings crate'ine bağımlı olmadan font ve density okumasını sağlar.
+- `theme::theme_settings(cx) -> &dyn ThemeSettingsProvider` — theme crate'inin somut ayarlar crate'ine bağımlı olmadan font ve density okumasını sağlar.
 - `UiDensity::{Compact, Default, Comfortable}` ve `spacing_ratio()` aralık ölçeğini verir; Zed tarafında sağlayıcı uygulaması `theme_settings` crate'inde yer alır.
 
 **Özel tema yükleme.** Bir kullanıcı temasını programatik olarak eklemek için:

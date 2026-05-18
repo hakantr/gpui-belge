@@ -15,7 +15,7 @@
   - [Liste, Çizim ve Animasyon](gpui_kullanimi/12-liste-cizim-ve-animasyon.md)
   - [Zed UI Bileşenleri](gpui_kullanimi/13-zed-ui-bilesenleri.md)
   - [Zed Workspace](gpui_kullanimi/14-zed-workspace.md)
-  - [Zed Settings ve Theme](gpui_kullanimi/15-zed-settings-ve-theme.md)
+  - [Zed Ayarları ve Tema](gpui_kullanimi/15-zed-settings-ve-theme.md)
   - [Komut Paleti ve Picker](gpui_kullanimi/16-komut-paleti-ve-picker.md)
   - [Test, Inspector ve Düşük Seviye API](gpui_kullanimi/17-test-inspector-ve-dusuk-seviye-api.md)
   - [Reçeteler ve Kontrol Listeleri](gpui_kullanimi/18-receteler-ve-kontrol-listeleri.md)

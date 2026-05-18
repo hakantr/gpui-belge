@@ -66,6 +66,11 @@ Bu dosya `src/gpui_kullanimi/` altındaki 18 bölümün Türkçeleştirme turund
 | device pixel | cihaz piksel |
 | border (prose, generic) | kenarlık |
 | border (API method) | korundu |
+| bounds, window bounds | sınırlar, pencere sınırları |
+| bounds restore | sınır geri yükleme |
+| anchor (konumlandırma) | anchor / referans noktası |
+| anchor bounds | anchor sınırları |
+| menu bounds | menü sınırları |
 
 ### Etkileşim ve Olaylar
 | İngilizce | Türkçe |
@@ -121,6 +126,7 @@ Bu dosya `src/gpui_kullanimi/` altındaki 18 bölümün Türkçeleştirme turund
 | reflection, reflectable | yansıma, yansıtılabilir |
 | marker (trait) | işaretleyici |
 | signature | imza |
+| source location | kaynak konumu |
 | builder, factory, registry | korundu |
 
 ### Asenkron ve İşlem
@@ -138,6 +144,8 @@ Bu dosya `src/gpui_kullanimi/` altındaki 18 bölümün Türkçeleştirme turund
 | instance | örnek |
 | channel | kanal |
 | unbounded | sınırsız |
+| runtime | çalışma zamanı |
+| foreground/background executor | ön plan/arka plan executor'ı |
 
 ### Veri, Önbellek ve Format
 | İngilizce | Türkçe |
@@ -166,6 +174,8 @@ Bu dosya `src/gpui_kullanimi/` altındaki 18 bölümün Türkçeleştirme turund
 | watcher | izleyici |
 | delayed-fallback | gecikmeli yedek |
 | asset cache | asset önbelleği |
+| spinner | yükleme göstergesi |
+| loading state | yükleme durumu |
 
 ### Metin, Font ve Tipografi
 | İngilizce | Türkçe |
@@ -175,6 +185,8 @@ Bu dosya `src/gpui_kullanimi/` altındaki 18 bölümün Türkçeleştirme turund
 | text system | metin sistemi |
 | font family | font ailesi |
 | font size | font boyutu |
+| UI font | UI fontu |
+| buffer font | buffer fontu |
 | line height | satır yüksekliği |
 | whitespace | boşluk |
 | align | hizalama |
@@ -186,6 +198,7 @@ Bu dosya `src/gpui_kullanimi/` altındaki 18 bölümün Türkçeleştirme turund
 | streaming text | akışlı metin |
 | lazy content | tembel içerik |
 | underline (paint) | alt çizgi |
+| density, UI density | yoğunluk, UI yoğunluğu |
 
 ### Bileşen ve UI Yüzeyleri
 | İngilizce | Türkçe |
@@ -215,6 +228,12 @@ Bu dosya `src/gpui_kullanimi/` altındaki 18 bölümün Türkçeleştirme turund
 | semantic | anlamsal |
 | feedback | geri bildirim |
 | feature, feature flag | özellik, özellik bayrağı |
+| completion | tamamlama |
+| completion menu | tamamlama menüsü |
+| icon theme | ikon teması |
+| start icon | başlangıç ikonu |
+| application menu | application menüsü |
+| anchor element | anchor element |
 
 ### Pencere, Platform ve Süsleme
 | İngilizce | Türkçe |
@@ -230,13 +249,14 @@ Bu dosya `src/gpui_kullanimi/` altındaki 18 bölümün Türkçeleştirme turund
 | cross-platform | çapraz platform |
 | screen capture | ekran yakalama |
 | headless | başsız |
+| headless renderer | başsız çizim aracı |
 | software emulation | yazılım öykünmesi |
 | diagnostic | tanı |
 | harness | koşum |
 | debug | hata ayıklama |
 | debug assert | hata ayıklama assert'i |
 | debug bounds | hata ayıklama sınırları |
-| popover, tooltip, modal, picker, scrollbar, hitbox, viewport | korundu |
+| popover, tooltip, modal, picker, scrollbar, hitbox, viewport, anchor | korundu |
 
 ### Komut Paleti, Picker ve Menü
 | İngilizce | Türkçe |
@@ -278,7 +298,7 @@ Bu dosya `src/gpui_kullanimi/` altındaki 18 bölümün Türkçeleştirme turund
 Aşağıdaki terim aileleri prose'da bile İngilizce bırakıldı — ya teknik standart isim, ya da Türkçeleştirildiğinde okunabilirliği düşürdüğü için:
 
 - **Rust dil/derleme:** `pub`, `private`, `crate`, `trait`, `struct`, `enum`, `impl`, `use`, `import`, `prelude`, `namespace`, `derive`, `match`, `let`, `mut`, `ref`, `panic`, `must_use`, `#[cfg(...)]`, `#[track_caller]`, `#[doc(hidden)]`, lifetime sözdizimi.
-- **GPUI/Zed teknik:** `paint`, `prepaint`, `hitbox`, `popover`, `tooltip`, `modal`, `picker`, `viewport`, `subpixel`, `atlas`, `sprite`, `taffy`, `lyon`, `scheduler`, `executor`, `dispatch`, `dispatcher`, `MRU`, `fenced block`, `hit-test`, `debounce`, `throttle`, `defer`, `tiling`, `keystroke`, `keybinding`, `keymap`.
+- **GPUI/Zed teknik:** `paint`, `prepaint`, `hitbox`, `popover`, `tooltip`, `modal`, `picker`, `viewport`, `anchor`, `anchored`, `subpixel`, `atlas`, `sprite`, `taffy`, `lyon`, `scheduler`, `executor`, `dispatch`, `dispatcher`, `MRU`, `fenced block`, `hit-test`, `debounce`, `throttle`, `defer`, `tiling`, `keystroke`, `keybinding`, `keymap`.
 - **Standart/protokol:** `IPv6`, `JSON`, `JSON schema`, `SQLite`, `RWGB`, `RGBA`, `BGRA`, `HSLA`, `SVG`, `GIF`, `WebP`, `PNG`, `JPEG`, `LSP`, `Vim`, `DWM`, `Wayland`, `X11`, `NSVisualEffectView`, `AXDocument`, `compositor`, `MultiWorkspace`.
 - **Unicode/tipografi standartları:** `grapheme cluster`, `combining mark`, `ZWJ`, `URL-decode`.
 - **API method/struct/enum isimleri:** Her zaman korundu. Örnekler: `Application::with_platform`, `WindowOptions`, `WindowKind::Dialog`, `WindowControlArea::{Drag, Close, Max, Min}`, `WindowBackgroundAppearance::{Transparent, Blurred}`, `ResizeEdge`, `CommandPaletteFilter`, `PickerDelegate`, `SettingsStore`, `ThemeRegistry`, vb.
@@ -295,6 +315,10 @@ Aşağıdaki terim aileleri prose'da bile İngilizce bırakıldı — ya teknik 
 | Frame | Kare |
 | Re-export | Yeniden Dışa Aktarım |
 | Style Extension Trait'leri | Stil Uzantı Trait'leri |
+| Settings ve Theme | Ayarları ve Tema |
+| Context Menu | Bağlam Menüsü |
+| Client-side | İstemci Tarafı |
+| Completion menu | Tamamlama menüsü |
 | Constants ve Type Aliases | Constants ve Tip Takma Adları |
 | Layer Shell | korundu |
 
@@ -306,6 +330,9 @@ Bazı kavramlar hem prose hem API yüzeyinde geçer; bu yüzden kararlar bilinç
 - `border` — `Style::border(...)` API'sinde korunur; prose'da "kenarlık" tercih edildi.
 - `frame` — animasyon ve çizim bağlamında "kare"; `RenderImage` frame'leri için yine "kare"; `request_animation_frame` gibi API adlarında korundu.
 - `cache` — prose'da "önbellek"; ancak `image_cache`, `RetainAllImageCache` gibi API isimlerinde korundu.
+- `bounds` — `Bounds`, `window.bounds()`, `layout_bounds` gibi API/tip/metot adlarında korunur; prose'da "sınırlar" veya bağlama göre "pencere sınırları" tercih edilir.
+- `anchor` — `Anchor` enum'u, `anchored()` elementi ve `.anchor(...)` API'sinde korunur; prose'da "anchor element" kalıbı korunabilir, ancak ölçüm sonucunda "anchor sınırları" gibi Türkçe çekim kullanılır.
+- `completion` — `Completion`, `CompletionsMenu` ve alan adlarında korunur; prose'da "tamamlama", "tamamlama menüsü" kullanılır.
 - `decoration` — pencere bağlamında "süsleme"; metin/yazı bağlamında "dekorasyon" (CSS terimi gibi).
 - `paint` (faz adı) — fluent zinciri ve faz tartışmasında korundu; "çizim" yalnız prose render bağlamı için kullanıldı.
 
