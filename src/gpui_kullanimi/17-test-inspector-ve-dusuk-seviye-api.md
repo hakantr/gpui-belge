@@ -28,14 +28,16 @@ GPUI test yazımında izlenen genel disiplinler şunlardır:
 
 ```rust
 #[gpui::test]
-fn test_save(cx: &mut TestAppContext) {
-    let window = cx.add_window(|window, cx| cx.new(|cx| Editor::new(window, cx)));
+fn kaydetmeyi_test_et(baglam: &mut TestAppContext) {
+    let pencere = baglam.add_window(|pencere, baglam| {
+        baglam.new(|baglam| Duzenleyici::new(pencere, baglam))
+    });
 
-    cx.simulate_keystrokes(window, "cmd-s");
-    cx.run_until_parked();
+    baglam.simulate_keystrokes(pencere, "cmd-s");
+    baglam.run_until_parked();
 
-    window.read_with(cx, |editor, _| {
-        assert!(editor.is_clean);
+    pencere.read_with(baglam, |duzenleyici, _| {
+        assert!(duzenleyici.temiz_mi);
     });
 }
 ```
@@ -172,16 +174,16 @@ Zed'in `workspace` ve `ui` katmanlarında sık görülen bazı `Window` çağrı
 **Kare zamanlama araçları.** Aynı kare yerine sonraki kareye iş taşımak için üç ana yardımcı grubu vardır:
 
 ```rust
-window.on_next_frame(|window, cx| {
-    window.refresh();
+pencere.on_next_frame(|pencere, _baglam| {
+    pencere.refresh();
 });
 
-cx.on_next_frame(window, |this, window, cx| {
-    this.remeasure(window, cx);
+baglam.on_next_frame(pencere, |gorunum, pencere, baglam| {
+    gorunum.yeniden_olc(pencere, baglam);
 });
 
-window.defer(cx, |window, cx| {
-    window.dispatch_action(MyAction.boxed_clone(), cx);
+pencere.defer(baglam, |pencere, baglam| {
+    pencere.dispatch_action(BenimEylem.boxed_clone(), baglam);
 });
 ```
 

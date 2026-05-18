@@ -17,10 +17,10 @@ Olay tipleri `interactive.rs` ve `platform.rs` içinde tanımlıdır: `KeyDownEv
 **Pano.** Pano okuma ve yazma sade çağrılarla yapılır:
 
 ```rust
-cx.write_to_clipboard(ClipboardItem::new_string("metin".to_string()));
+baglam.write_to_clipboard(ClipboardItem::new_string("metin".to_string()));
 
-if let Some(item) = cx.read_from_clipboard()
-    && let Some(text) = item.text()
+if let Some(oge) = baglam.read_from_clipboard()
+    && let Some(metin) = oge.text()
 {
     // kullan
 }
@@ -50,15 +50,15 @@ if let Some(item) = cx.read_from_clipboard()
 `Window::prompt` platform diyaloğunu açar. Platform prompt'u desteklemiyorsa veya özel bir prompt builder ayarlanmışsa GPUI içinde çizilen prompt kullanılır:
 
 ```rust
-let response = window.prompt(
+let yanit = pencere.prompt(
     PromptLevel::Warning,
-    "Unsaved changes",
-    Some("Close without saving?"),
-    &[PromptButton::cancel("Cancel"), PromptButton::ok("Close")],
-    cx,
+    "Kaydedilmemiş değişiklikler",
+    Some("Kaydetmeden kapatılsın mı?"),
+    &[PromptButton::cancel("İptal"), PromptButton::ok("Kapat")],
+    baglam,
 );
 
-let selected_index = response.await?;
+let secilen_sira = yanit.await?;
 ```
 
 **Prompt tipleri.** Prompt akışında kullanılan tipler şu rolleri üstlenir:
@@ -78,12 +78,12 @@ let selected_index = response.await?;
 **Özel builder.** Tamamen özel bir prompt görsel akışı tanımlamak için builder kayda alınır:
 
 ```rust
-cx.set_prompt_builder(|level, message, detail, actions, handle, window, cx| {
-    let message = message.to_string();
-    let detail = detail.map(ToString::to_string);
-    let actions = actions.to_vec();
-    let view = cx.new(|cx| MyPrompt::new(level, message, detail, actions, cx));
-    handle.with_view(view, window, cx)
+baglam.set_prompt_builder(|seviye, mesaj, ayrinti, eylemler, tutamac, pencere, baglam| {
+    let mesaj = mesaj.to_string();
+    let ayrinti = ayrinti.map(ToString::to_string);
+    let eylemler = eylemler.to_vec();
+    let gorunum = baglam.new(|baglam| IstemGorunumu::new(seviye, mesaj, ayrinti, eylemler, baglam));
+    tutamac.with_view(gorunum, pencere, baglam)
 });
 ```
 
@@ -110,25 +110,25 @@ Menü modeli birkaç ana tip etrafında kurulur:
 **Builder örneği.** Üst seviye menü ağacı kurulurken builder kalıbı şu şekildedir:
 
 ```rust
-cx.set_menus(vec![
+baglam.set_menus(vec![
     Menu::new("Zed").items([
-        MenuItem::action("About Zed", zed::About),
+        MenuItem::action("Zed Hakkında", zed::About),
         MenuItem::Separator,
-        MenuItem::action("Quit", workspace::Quit),
+        MenuItem::action("Çık", workspace::Quit),
     ]),
-    Menu::new("Edit").items([
-        MenuItem::os_action("Undo", editor::Undo, OsAction::Undo),
-        MenuItem::os_action("Redo", editor::Redo, OsAction::Redo),
+    Menu::new("Düzenle").items([
+        MenuItem::os_action("Geri Al", editor::Undo, OsAction::Undo),
+        MenuItem::os_action("Yinele", editor::Redo, OsAction::Redo),
         MenuItem::Separator,
-        MenuItem::os_action("Cut", editor::Cut, OsAction::Cut),
-        MenuItem::os_action("Copy", editor::Copy, OsAction::Copy),
-        MenuItem::os_action("Paste", editor::Paste, OsAction::Paste),
-        MenuItem::os_action("Select All", editor::SelectAll, OsAction::SelectAll),
+        MenuItem::os_action("Kes", editor::Cut, OsAction::Cut),
+        MenuItem::os_action("Kopyala", editor::Copy, OsAction::Copy),
+        MenuItem::os_action("Yapıştır", editor::Paste, OsAction::Paste),
+        MenuItem::os_action("Tümünü Seç", editor::SelectAll, OsAction::SelectAll),
     ]),
 ]);
 ```
 
-`MenuItem::action(name, action)`, veri taşımayan `unit struct` action'lar için bir kısayoldur. Veri taşıyan action'larda da doğrudan action değeri geçirilebilir: `MenuItem::action("Go To Line", GoToLine { line: 1 })`. Aynı menü modeli klonlanmak istenirse `Menu::owned()` ve `MenuItem::owned()` kullanılır.
+`MenuItem::action(name, action)`, veri taşımayan `unit struct` action'lar için bir kısayoldur. Veri taşıyan action'larda da doğrudan action değeri geçirilebilir: `MenuItem::action("Satıra Git", SatiraGit { satir: 1 })`. Aynı menü modeli klonlanmak istenirse `Menu::owned()` ve `MenuItem::owned()` kullanılır.
 
 **Diğer menü API'leri** (`App` üzerinde):
 

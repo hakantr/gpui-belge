@@ -41,8 +41,8 @@ Tipik bir kullanım, `CommandPaletteFilter::update_global(cx, |filter, _| { ... 
 Komut paletindeki "tam string'i komuta dönüştür" davranışı (örneğin Vim ex komutları, line jump `:42`) `GlobalCommandPaletteInterceptor` üzerinden çalışır:
 
 ```rust
-GlobalCommandPaletteInterceptor::set(cx, |query, workspace, cx| {
-    parse_query_to_actions(query, workspace, cx)
+GlobalCommandPaletteInterceptor::set(baglam, |sorgu, calisma_alani, baglam| {
+    sorgudan_eylemlere_ayristir(sorgu, calisma_alani, baglam)
 });
 ```
 

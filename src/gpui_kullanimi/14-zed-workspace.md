@@ -82,7 +82,7 @@ pub trait Item: Focusable + EventEmitter<Self::Event> + Render + Sized {
 
 **Tipik akış.** Yeni bir tab türü oluşturmak şu adımlardan geçer:
 
-- `impl Item for MyView` yazılır.
+- `impl Item for BenimGorunumum` yazılır.
 - `Workspace::open_path`, `open_paths` veya `open_abs_path` zaten `ProjectItem` üreterek doğru `Item` view'ini açar; özel bir akışta `Pane::add_item(Box::new(view), ...)` kullanılır.
 - `Pane::activate_item`, `close_active_item`, `navigate_backward`, `navigate_forward`, `split` (split direction ile yeni pane) Pane API'leridir.
 - `Workspace::split_pane(pane, direction, cx)` mevcut pane'i böler.
@@ -105,11 +105,11 @@ pub trait ModalView: ManagedView {
 **Açma ve kapama.** Modal toggle akışı şu yardımcılara dayanır:
 
 ```rust
-workspace.toggle_modal(window, cx, |window, cx| {
-    MyModal::new(window, cx)
+calisma_alani.toggle_modal(pencere, baglam, |pencere, baglam| {
+    ModalGorunumu::new(pencere, baglam)
 });
 
-workspace.hide_modal(window, cx);
+calisma_alani.hide_modal(pencere, baglam);
 ```
 
 `toggle_modal` aynı tipte bir modal zaten açıksa onu kapatır; aksi halde yenisini açar. `on_before_dismiss` `DismissDecision::Dismiss(false)` veya `Pending` döndürürse yeni modal görünmez.
@@ -134,9 +134,9 @@ pub trait StatusItemView: Render {
 Workspace status bar'a item eklemek için:
 
 ```rust
-workspace.status_bar().update(cx, |status_bar, cx| {
-    status_bar.add_left_item(my_view, window, cx);
-    status_bar.add_right_item(other_view, window, cx);
+calisma_alani.status_bar().update(baglam, |durum_cubugu, baglam| {
+    durum_cubugu.add_left_item(sol_gorunum, pencere, baglam);
+    durum_cubugu.add_right_item(sag_gorunum, pencere, baglam);
 });
 ```
 
@@ -158,27 +158,27 @@ pub enum NotificationId {
 }
 
 // Yapıcı yardımcıları:
-// NotificationId::unique::<MyNotification>()
-// NotificationId::composite::<MyNotification>(element_id)
-// NotificationId::named("save".into())
+// NotificationId::unique::<BildirimGorunumu>()
+// NotificationId::composite::<BildirimGorunumu>(oge_id)
+// NotificationId::named("kaydet".into())
 ```
 
 Mesaj göstermek için kullanılan başlıca akışlar şunlardır:
 
 ```rust
-workspace.show_notification(
-    NotificationId::unique::<MyNotification>(),
-    cx,
-    |cx| cx.new(|cx| MyNotification::new(cx)),
+calisma_alani.show_notification(
+    NotificationId::unique::<BildirimGorunumu>(),
+    baglam,
+    |baglam| baglam.new(|baglam| BildirimGorunumu::new(baglam)),
 );
 
-workspace.show_toast(
-    Toast::new(NotificationId::named("save".into()), "Saved")
+calisma_alani.show_toast(
+    Toast::new(NotificationId::named("kaydet".into()), "Kaydedildi")
         .autohide(),
-    cx,
+    baglam,
 );
 
-workspace.show_error(&error, cx);
+calisma_alani.show_error(&hata, baglam);
 ```
 
 `Toast` hafif ve geçicidir (autohide); `Notification` ise kalıcı bir view'dir ve kullanıcı dismiss edene kadar görünür kalır. `SuppressEvent` aynı kaynaktan gelen tekrarlı bildirimleri bastırmak için kullanılır.
@@ -197,15 +197,15 @@ pub trait ToastView: ManagedView {
 #### `Workspace::open_*` Akışı
 
 ```rust
-let task = workspace.open_paths(
+let gorev = calisma_alani.open_paths(
     vec![PathBuf::from("src/main.rs")],
     OpenOptions {
         visible: Some(OpenVisible::All),
         ..Default::default()
     },
     None,
-    window,
-    cx,
+    pencere,
+    baglam,
 );
 ```
 
@@ -273,7 +273,7 @@ pub trait SerializableItem: Item {
 Kayıt için tek satırlık bir çağrı yeterlidir:
 
 ```rust
-workspace::register_serializable_item::<MyItem>(cx);
+workspace::register_serializable_item::<BenimOgem>(baglam);
 ```
 
 - `serialized_item_kind()` session DB'deki discriminant'tır; restore akışı item tipini bu değer üzerinden bulur.
@@ -521,14 +521,14 @@ Zed uygulamasında workspace açmak yalnızca `open_window` çağrısı değildi
 `zed::open_listener` uygulama dışından gelen açma isteklerini kuyruğa alır:
 
 ```rust
-let (listener, rx) = OpenListener::new();
-listener.open(RawOpenRequest {
-    urls,
-    diff_paths,
-    diff_all,
-    dev_container,
-    wsl,
-    cwd,
+let (dinleyici, alici) = OpenListener::new();
+dinleyici.open(RawOpenRequest {
+    urls: urller,
+    diff_paths: diff_yollari,
+    diff_all: tumunu_karsilastir,
+    dev_container: gelistirme_konteyneri,
+    wsl: wsl_istegi,
+    cwd: calisma_dizini,
 });
 ```
 
@@ -603,7 +603,7 @@ macOS dışındaki istemci tarafı application menüsü `title_bar::ApplicationM
 `FocusFollowsMouse` trait'i `StatefulInteractiveElement` üzerine eklenir:
 
 ```rust
-element.focus_follows_mouse(WorkspaceSettings::get_global(cx).focus_follows_mouse, cx)
+oge.focus_follows_mouse(WorkspaceSettings::get_global(baglam).focus_follows_mouse, baglam)
 ```
 
 - Ayar açık olduğunda hover girişi sırasında hedef `AnyWindowHandle + FocusHandle` global duruma yazılır.

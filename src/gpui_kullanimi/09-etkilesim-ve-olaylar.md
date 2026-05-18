@@ -7,14 +7,14 @@
 Klavye odağı GPUI'de `FocusHandle` ile temsil edilir. Bir view'un odak alıp verebilmesi için kendine ait bir handle tutması ve çizim sırasında bu handle'ı elemente bağlaması gerekir.
 
 ```rust
-struct View {
-    focus_handle: FocusHandle,
+struct Gorunum {
+    odak_tutamagi: FocusHandle,
 }
 
-impl View {
-    fn new(cx: &mut Context<Self>) -> Self {
+impl Gorunum {
+    fn new(baglam: &mut Context<Self>) -> Self {
         Self {
-            focus_handle: cx.focus_handle(),
+            odak_tutamagi: baglam.focus_handle(),
         }
     }
 }
@@ -24,16 +24,16 @@ impl View {
 
 ```rust
 div()
-    .track_focus(&self.focus_handle)
-    .focus_visible(|style| style.border_color(cx.theme().colors().border_focused))
+    .track_focus(&self.odak_tutamagi)
+    .focus_visible(|stil| stil.border_color(baglam.theme().colors().border_focused))
 ```
 
 Programatik olarak odak vermek için handle'ın kendisi veya `cx.focus_view` çağrısı kullanılır:
 
 ```rust
-self.focus_handle.focus(window, cx);
+self.odak_tutamagi.focus(pencere, baglam);
 // veya
-cx.focus_view(&child_entity, window);
+baglam.focus_view(&alt_varlik, pencere);
 ```
 
 **Odak sorguları.** Mevcut odak durumunu kontrol etmek için üç temel soru ve üç karşılık gelen metot vardır:
@@ -91,11 +91,11 @@ h_flex()
 
 ```rust
 canvas(
-    |bounds, window, _cx| {
-        window.insert_hitbox(bounds, HitboxBehavior::Normal)
+    |sinirlar, pencere, _baglam| {
+        pencere.insert_hitbox(sinirlar, HitboxBehavior::Normal)
     },
-    |_bounds, hitbox, window, _cx| {
-        window.set_cursor_style(CursorStyle::ResizeLeftRight, &hitbox);
+    |_sinirlar, isabet_kutusu, pencere, _baglam| {
+        pencere.set_cursor_style(CursorStyle::ResizeLeftRight, &isabet_kutusu);
     },
 )
 ```
@@ -110,9 +110,9 @@ GPUI'da sürükleme sırasında, sürüklenen elementin yerine ayrı bir hayalet
 
 ```rust
 div()
-    .id("draggable")
-    .on_drag(payload.clone(), |payload, mouse_offset, window, cx| {
-        cx.new(|_| GhostView::for_payload(payload.clone(), mouse_offset))
+    .id("suruklenebilir")
+    .on_drag(yuk.clone(), |yuk, fare_kaymasi, _pencere, baglam| {
+        baglam.new(|_| HayaletGorunum::yuk_icin(yuk.clone(), fare_kaymasi))
     })
 ```
 
@@ -121,8 +121,8 @@ div()
 ```rust
 fn on_drag<T, W>(
     self,
-    value: T,
-    constructor: impl Fn(&T, Point<Pixels>, &mut Window, &mut App) -> Entity<W> + 'static,
+    deger: T,
+    kurucu: impl Fn(&T, Point<Pixels>, &mut Window, &mut App) -> Entity<W> + 'static,
 ) -> Self
 where
     T: 'static,
@@ -137,17 +137,17 @@ where
 
 ```rust
 div()
-    .drag_over::<MyPayload>(|style, payload, window, cx| {
-        style.bg(rgb(0xeeeeee))
+    .drag_over::<SuruklemeYuku>(|stil, _yuk, _pencere, _baglam| {
+        stil.bg(rgb(0xeeeeee))
     })
-    .can_drop(|payload, window, cx| {
-        payload
-            .downcast_ref::<MyPayload>()
-            .is_some_and(|payload| payload.is_compatible(window, cx))
+    .can_drop(|yuk, pencere, baglam| {
+        yuk
+            .downcast_ref::<SuruklemeYuku>()
+            .is_some_and(|yuk| yuk.uyumlu_mu(pencere, baglam))
     })
-    .on_drop::<MyPayload>(cx.listener(|this, payload: &MyPayload, window, cx| {
-        this.accept(payload.clone());
-        cx.notify();
+    .on_drop::<SuruklemeYuku>(baglam.listener(|gorunum, yuk: &SuruklemeYuku, _pencere, baglam| {
+        gorunum.kabul_et(yuk.clone());
+        baglam.notify();
     }))
 ```
 
@@ -166,12 +166,12 @@ div()
 
 ```rust
 div()
-    .on_drag_move::<ExternalPaths>(cx.listener(|this, event, window, cx| {
-        let paths = event.drag(cx).paths();
-        this.preview_external_drop(paths, event.bounds, window, cx);
+    .on_drag_move::<HariciYollar>(baglam.listener(|gorunum, olay, pencere, baglam| {
+        let yollar = olay.drag(baglam).paths();
+        gorunum.harici_birakmayi_onizle(yollar, olay.bounds, pencere, baglam);
     }))
-    .on_drop(cx.listener(|this, paths: &ExternalPaths, window, cx| {
-        this.handle_external_paths_drop(paths, window, cx);
+    .on_drop(baglam.listener(|gorunum, yollar: &HariciYollar, pencere, baglam| {
+        gorunum.harici_yollari_birakmayi_isle(yollar, pencere, baglam);
     }))
 ```
 
@@ -189,9 +189,9 @@ div()
 Hitbox, fare çarpışma testinin (`hit-test`) ve imleç davranışının temelidir. Element dinleyicileri çoğu zaman hitbox'ı arka planda kurar; bu API doğrudan özel `canvas` veya özel element yazılırken devreye girer.
 
 ```rust
-let hitbox = window.insert_hitbox(bounds, HitboxBehavior::Normal);
-if hitbox.is_hovered(window) {
-    window.set_cursor_style(CursorStyle::PointingHand, &hitbox);
+let isabet_kutusu = pencere.insert_hitbox(sinirlar, HitboxBehavior::Normal);
+if isabet_kutusu.is_hovered(pencere) {
+    pencere.set_cursor_style(CursorStyle::PointingHand, &isabet_kutusu);
 }
 ```
 
@@ -204,9 +204,9 @@ if hitbox.is_hovered(window) {
 **İşaretçi yakalama.** Sürükleme veya yeniden boyutlandırma gibi senaryolarda fare element sınırlarının dışına çıksa bile olayları almaya devam etmek için işaretçi yakalama (`pointer capture`) kullanılır:
 
 ```rust
-window.capture_pointer(hitbox.id);
-// drag/resize bittiğinde
-window.release_pointer();
+pencere.capture_pointer(isabet_kutusu.id);
+// sürükleme/yeniden boyutlandırma bittiğinde
+pencere.release_pointer();
 ```
 
 Yakalama aktifken ilgili hitbox üzerinde durulmuş (`hovered`) sayılır. Yeniden boyutlandırma tutamacı ve sürükleme etkileşimlerinde fare element sınırlarının dışına çıksa bile hareket takip edilebilir. `window.captured_hitbox()` aktif yakalama id'sini döndürür; özel element hata ayıklaması veya iç içe sürükleme verisini ayrıştırma dışında genelde kullanılmaz.
@@ -236,7 +236,7 @@ Yakalama aktifken ilgili hitbox üzerinde durulmuş (`hovered`) sayılır. Yenid
 Tab navigasyonu `FocusHandle` üzerindeki iki bayrak yardımıyla kontrol edilir; ikisi de fluent zincirde okunur:
 
 ```rust
-let handle = cx.focus_handle()
+let tutamac = baglam.focus_handle()
     .tab_stop(true)        // Tab tuşuyla durulabilir
     .tab_index(0);         // Sıralama yoluna katılır
 ```
@@ -260,8 +260,8 @@ Düşük seviyeli karşılık `window.with_tab_group(Some(index), |window| ...)`
 
 ```rust
 div()
-    .track_focus(&self.focus_handle)
-    .on_action(cx.listener(|this, _: &menu::Confirm, window, cx| { ... }))
+    .track_focus(&self.odak_tutamagi)
+    .on_action(baglam.listener(|gorunum, _: &menu::Confirm, pencere, baglam| { ... }))
     .child(/* ... */)
 ```
 
@@ -286,7 +286,7 @@ Ham `InputHandler` uygulaması yazıldığında ayrıca `prefers_ime_for_printab
 IME aday penceresinin doğru konumda kalması için imleç hareketinden sonra:
 
 ```rust
-window.invalidate_character_coordinates();
+pencere.invalidate_character_coordinates();
 ```
 
 Zed'de form tipindeki tek satırlık girdi için doğrudan düzenleyici yazmak yerine `ui_input::InputField` kullanılır. Bu crate, düzenleyiciye (`editor`) bağlı olduğu için `ui` içinde değildir.
@@ -308,26 +308,26 @@ Metin düzenleyen özel bir element yazılırken yalnızca tuş olayı dinlemek 
 **View tarafı.** Görece geniş bir trait yüzeyi vardır; sık kullanılan metotlar şu şekilde uygulanır:
 
 ```rust
-impl EntityInputHandler for EditorLikeView {
+impl EntityInputHandler for EditorBenzeriGorunum {
     fn selected_text_range(
         &mut self,
-        ignore_disabled_input: bool,
-        window: &mut Window,
-        cx: &mut Context<Self>,
+        devre_disi_girdiyi_yoksay: bool,
+        pencere: &mut Window,
+        baglam: &mut Context<Self>,
     ) -> Option<UTF16Selection> {
-        self.selection_utf16(ignore_disabled_input, window, cx)
+        self.secim_utf16(devre_disi_girdiyi_yoksay, pencere, baglam)
     }
 
     fn marked_text_range(
         &self,
-        window: &mut Window,
-        cx: &mut Context<Self>,
+        pencere: &mut Window,
+        baglam: &mut Context<Self>,
     ) -> Option<Range<usize>> {
-        self.marked_range_utf16(window, cx)
+        self.isaretli_aralik_utf16(pencere, baglam)
     }
 
-    fn unmark_text(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        self.clear_marked_text(window, cx);
+    fn unmark_text(&mut self, pencere: &mut Window, baglam: &mut Context<Self>) {
+        self.isaretli_metni_temizle(pencere, baglam);
     }
 
     // text_for_range, replace_text_in_range,
@@ -339,10 +339,10 @@ impl EntityInputHandler for EditorLikeView {
 Element çizimi sırasında dinleyici pencereye kaydedilir:
 
 ```rust
-window.handle_input(
-    &focus_handle,
-    ElementInputHandler::new(bounds, view_entity.clone()),
-    cx,
+pencere.handle_input(
+    &odak_tutamagi,
+    ElementInputHandler::new(sinirlar, gorunum_varligi.clone()),
+    baglam,
 );
 ```
 
@@ -377,9 +377,9 @@ window.handle_input(
 Tipik kullanım, ayrıştırma, geri biçimleme ve yönlendirme zincirinde görünür:
 
 ```rust
-let keystroke = Keystroke::parse("cmd-shift-p")?;
-let text = keystroke.unparse();
-let handled = window.dispatch_keystroke(keystroke, cx);
+let tus_vurusu = Keystroke::parse("cmd-shift-p")?;
+let metin = tus_vurusu.unparse();
+let islendi_mi = pencere.dispatch_keystroke(tus_vurusu, baglam);
 ```
 
 **Modifier yardımcıları.** Sık kullanılan modifier kombinasyonları için yapıcı fonksiyonlar mevcuttur:

@@ -41,7 +41,45 @@ impl RenderOnce for Badge {
 }
 ```
 
-Aradaki ayrım sahiplik üzerinden anlaşılır: `Render::render` her ekran karesinde yeniden çağrıldığı için `&mut self` alır ve view'un alanlarında duran veriyi yerinde okur; `RenderOnce::render` ise yalnızca bir kez element üretip biteceği için `self`'i tamamen tüketir ve genellikle Zed UI bileşenlerinde tercih edilir. Seçim, bileşenin verisinin nerede saklandığına bağlıdır. Veri view içinde kalıcı olarak tutulacaksa `Render`, çağıran kodun geçirdiği yapıdan tek seferlik inşa ediliyorsa `RenderOnce` kullanılır.
+Buradaki ayrımı "render çağrısı bittikten sonra veri nerede yaşamaya devam edecek?" sorusuyla düşünmek daha nettir. `Render::render`, `&mut self` aldığı için view nesnesini tüketmez. Metot bittiğinde aynı view, `Entity<MyView>` içinde yaşamaya devam eder ve bir sonraki çizimde yine aynı alanlar okunur:
+
+```rust
+struct CounterView {
+    count: usize,
+}
+
+impl Render for CounterView {
+    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+        div().child(format!("Sayaç: {}", self.count))
+    }
+}
+```
+
+Bu örnekte `count`, element ağacının değil `CounterView`'un alanıdır. `render` sadece o anki `count` değerinden geçici bir UI çıktısı üretir; `count` değerini başka yere taşımaz ve silmez. Daha sonra bir action, timer veya event `count` değerini değiştirdiğinde `cx.notify()` ile view yeniden çizilir; aynı `CounterView` bu kez yeni `count` değeriyle tekrar render edilir veri view'da kalır, render fonksiyonu onu kullanarak her seferinde yeni bir element ağacı kurar.
+
+`RenderOnce::render` ise `self` aldığı için bileşen nesnesinin sahipliğini alır ve onu tüketir. Bu, özellikle parent view içinde anlık olarak kurulan küçük UI parçaları için uygundur:
+
+```rust
+impl Render for ToolbarView {
+    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+        div()
+            .child(Badge { label: "Kaydedildi".into() })
+            .child(Badge { label: "Hazır".into() })
+    }
+}
+```
+
+Burada `Badge` kalıcı bir view değildir; `ToolbarView::render` çalışırken oluşturulan geçici bir değerdir. GPUI bu `Badge` değerini element'e çevirirken `RenderOnce::render(self, ...)` çağırır. Çağrıdan sonra o `Badge` struct'ına tekrar dönülmez; gerekiyorsa bir sonraki render'da parent view yeniden yeni bir `Badge` oluşturur. Bu yüzden `Badge`, `self.label` alanını rahatça element'e taşıyabilir:
+
+```rust
+impl RenderOnce for Badge {
+    fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
+        div().rounded_sm().px_2().child(self.label)
+    }
+}
+```
+
+Kural şudur: veri view'un kendi yaşam döngüsünde korunacaksa `Render` kullanılır; çünkü view aynı nesne olarak kalır. Veri sadece çağıran kodun o render sırasında verdiği bir yapıdan UI parçası üretmek için kullanılacaksa `RenderOnce` kullanılır; çünkü bileşen üretimden sonra elde tutulmaz.
 
 ## Element Yaşam Döngüsü ve Çizim Aşamaları
 

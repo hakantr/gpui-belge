@@ -15,19 +15,19 @@ GPUI'de neredeyse her iş bir bağlam (context) üzerinden yapılır. Kodda bu b
 **Entity kullanımı.** Bir entity hem okunabilir hem güncellenebilir. İki işlem de bağlam üzerinden yapılır:
 
 ```rust
-let entity = cx.new(|cx| State::new(cx));
+let varlik = baglam.new(|baglam| Durum::new(baglam));
 
-let value = entity.read(cx).value;
+let deger = varlik.read(baglam).deger;
 
-entity.update(cx, |state, cx| {
-    state.value += 1;
-    cx.notify();
+varlik.update(baglam, |durum, baglam| {
+    durum.deger += 1;
+    baglam.notify();
 });
 
-let weak = entity.downgrade();
-weak.update(cx, |state, cx| {
-    state.value += 1;
-    cx.notify();
+let zayif = varlik.downgrade();
+zayif.update(baglam, |durum, baglam| {
+    durum.deger += 1;
+    baglam.notify();
 })?;
 ```
 
@@ -55,45 +55,45 @@ Bu Deref kalıbında metot adı tek başına yeterli değildir. Aynı isim tipli
 **`WindowHandle<V>`.** Tipli handle kök view'a doğrudan tipli erişim sağlar:
 
 ```rust
-handle.update(cx, |root: &mut Workspace, window, cx| {
-    root.focus_active_pane(window, cx);
+tutamac.update(baglam, |kok: &mut Workspace, pencere, baglam| {
+    kok.focus_active_pane(pencere, baglam);
 })?;
 
-let root_ref: &Workspace = handle.read(cx)?;
-let title = handle.read_with(cx, |root, cx| root.title(cx))?;
-let entity = handle.entity(cx)?;
+let kok_ref: &Workspace = tutamac.read(baglam)?;
+let baslik = tutamac.read_with(baglam, |kok, baglam| kok.title(baglam))?;
+let varlik = tutamac.entity(baglam)?;
 // WindowHandle::is_active `Option<bool>` döner; pencere kapanmış/geçici
 // olarak ödünç alınmışsa `None`. Tipik kullanım:
-let active: Option<bool> = handle.is_active(cx);
+let aktif_mi: Option<bool> = tutamac.is_active(baglam);
 
-// `window_id()` owner olarak `AnyWindowHandle` metodudur; fakat
+// `window_id()` sahip olarak `AnyWindowHandle` metodudur; fakat
 // `WindowHandle<V>: Deref<Target = AnyWindowHandle>` olduğu için bu çağrı
-// method resolution ile çalışır:
-let id = handle.window_id();
+// metot çözümleme ile çalışır:
+let id = tutamac.window_id();
 
-// Untyped handle saklamak veya AnyWindowHandle API'sini açık göstermek
+// Tipsiz tutamac saklamak veya AnyWindowHandle API'sini açık göstermek
 // gerektiğinde dönüşüm bilinçli yapılır:
-let any: AnyWindowHandle = handle.into();
-let same_id = any.window_id();
+let tipsiz: AnyWindowHandle = tutamac.into();
+let ayni_id = tipsiz.window_id();
 ```
 
 **`AnyWindowHandle`.** Tipi silinmiş handle ise jenerik kodlarda ve çalışma zamanı `downcast` senaryolarında kullanılır:
 
 ```rust
-if let Some(workspace) = any_handle.downcast::<Workspace>() {
-    workspace.update(cx, |workspace, window, cx| {
-        workspace.activate(window, cx);
+if let Some(calisma_alani) = tipsiz_tutamac.downcast::<Workspace>() {
+    calisma_alani.update(baglam, |calisma_alani, pencere, baglam| {
+        calisma_alani.activate(pencere, baglam);
     })?;
 }
 
-any_handle.update(cx, |root_view, window, cx| {
-    let root_entity_id = root_view.entity_id();
-    window.refresh();
-    (root_entity_id, window.is_window_active())
+tipsiz_tutamac.update(baglam, |kok_gorunum, pencere, _baglam| {
+    let kok_varlik_id = kok_gorunum.entity_id();
+    pencere.refresh();
+    (kok_varlik_id, pencere.is_window_active())
 })?;
 
-let title = any_handle.read::<Workspace, _, _>(cx, |workspace, cx| {
-    workspace.read(cx).title(cx)
+let baslik = tipsiz_tutamac.read::<Workspace, _, _>(baglam, |calisma_alani, baglam| {
+    calisma_alani.read(baglam).title(baglam)
 })?;
 ```
 

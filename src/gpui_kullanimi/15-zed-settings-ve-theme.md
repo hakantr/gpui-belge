@@ -17,21 +17,21 @@ Yeni bir ayar eklenirken önce `settings_content` içindeki JSON içerik modelin
 
 ```rust
 #[derive(Clone, Deserialize, RegisterSetting)]
-pub struct YourSettings {
-    pub enabled: bool,
+pub struct OzellikAyarlari {
+    pub etkin: bool,
 }
 
-impl Settings for YourSettings {
-    fn from_settings(content: &settings::SettingsContent) -> Self {
-        let section = &content.your_feature;
+impl Settings for OzellikAyarlari {
+    fn from_settings(icerik: &settings::SettingsContent) -> Self {
+        let bolum = &icerik.ozellik;
         Self {
-            enabled: section.enabled.unwrap_or(false),
+            etkin: bolum.etkin.unwrap_or(false),
         }
     }
 }
 ```
 
-`RegisterSetting` derive'ı envanter üzerinden tipi `SettingsStore` içine kaydeder. Elle kayıt gerektiğinde uygulama başlangıcında `YourSettings::register(cx)` de kullanılabilir. Okuma tarafındaki standart giriş noktaları `Settings::get_global(cx)`, `Settings::get(path, cx)` ve `Settings::try_get(cx)` şeklindedir.
+`RegisterSetting` derive'ı envanter üzerinden tipi `SettingsStore` içine kaydeder. Elle kayıt gerektiğinde uygulama başlangıcında `OzellikAyarlari::register(baglam)` de kullanılabilir. Okuma tarafındaki standart giriş noktaları `Settings::get_global(baglam)`, `Settings::get(yol, baglam)` ve `Settings::try_get(baglam)` şeklindedir.
 
 Agent ayar içeriğinde `agent.default_model` yanında `agent.subagent_model: Option<LanguageModelSelection>` de bulunur. `spawn_agent` ile açılan subagent thread'i bu ayar ayarlanmışsa onu kullanır; ayar yoksa üst agent'ın model seçimiyle devam eder. Agent ve multi-workspace davranışında `AgentSettings::enabled` de önemli bir ayar sinyalidir.
 
@@ -53,9 +53,9 @@ Agent ayar içeriğinde `agent.default_model` yanında `agent.subagent_model: Op
 **Tema renkleri.** Tema bilgisine bağlam üzerinden ulaşılır:
 
 ```rust
-let colors = cx.theme().colors();
-let panel_bg = colors.panel_background;
-let border = colors.border;
+let renkler = baglam.theme().colors();
+let panel_arkaplan = renkler.panel_background;
+let kenarlik = renkler.border;
 ```
 
 `cx.theme()` aktif `ThemeVariant` (light/dark) döndürür. `.colors()`, `.players()`, `.syntax()` alt bölümlerini taşır. `theme::ActiveTheme` uzantı trait'i `App` üzerinde olduğu için `cx.theme()` doğrudan çalışır.
@@ -82,40 +82,40 @@ let border = colors.border;
 ```rust
 // Derive ile envanter üzerinden otomatik kayıt:
 #[derive(Clone, Deserialize, RegisterSetting)]
-pub struct YourSettings { pub enabled: bool }
+pub struct OzellikAyarlari { pub etkin: bool }
 
-impl Settings for YourSettings {
-    fn from_settings(content: &SettingsContent) -> Self {
-        Self { enabled: content.your_feature.as_ref()
-            .and_then(|f| f.enabled).unwrap_or(false) }
+impl Settings for OzellikAyarlari {
+    fn from_settings(icerik: &SettingsContent) -> Self {
+        Self { etkin: icerik.ozellik.as_ref()
+            .and_then(|ozellik| ozellik.etkin).unwrap_or(false) }
     }
 }
 
 // Elle kayıt (her zaman çalışan path):
-YourSettings::register(cx);
+OzellikAyarlari::register(baglam);
 ```
 
 `RegisterSetting` derive'ı `inventory::collect!` ile derleme zamanında bir topluluk yaratır. Store kurulumu `SettingsStore::new(cx, &settings::default_settings())` imzasıyla yapılır; Zed'in normal başlangıç akışında bunu `settings::init(cx)` çağırır ve oluşan store'u `cx.set_global(settings)` ile global hale getirir.
 
 **Okuma.** Ayarı çalışma zamanında almak için kullanılan API'ler:
 
-- `YourSettings::get_global(cx)` — aktif global değer.
-- `YourSettings::get(Some(SettingsLocation { worktree_id, path }), cx)` — worktree veya `.zed/settings.json` üzerine yazmaları dahil değer.
-- `YourSettings::try_get(cx)` — store kaydedilmemişse `None`.
-- `YourSettings::try_read_global(async_cx, |s| ...)` — async bağlam içinde okur.
+- `OzellikAyarlari::get_global(baglam)` — aktif global değer.
+- `OzellikAyarlari::get(Some(SettingsLocation { worktree_id, path }), baglam)` — worktree veya `.zed/settings.json` üzerine yazmaları dahil değer.
+- `OzellikAyarlari::try_get(baglam)` — store kaydedilmemişse `None`.
+- `OzellikAyarlari::try_read_global(async_baglam, |ayarlar| ...)` — async bağlam içinde okur.
 
 **Yazma.** Ayarın çalışma zamanında değiştirilmesi veya kalıcı kaydedilmesi için yardımcılar vardır:
 
-- `YourSettings::override_global(value, cx)` — programatik üzerine yazma; kalıcılaştırılmaz, yalnız çalışma zamanı durumunu değiştirir.
+- `OzellikAyarlari::override_global(deger, baglam)` — programatik üzerine yazma; kalıcılaştırılmaz, yalnız çalışma zamanı durumunu değiştirir.
 - `settings::update_settings_file(fs, cx, |content, cx| { ... })` — kullanıcı JSON'una kalıcı yazma yoludur. Dosya okuma/yazma, ayrıştırma ve store güncelleme akışı `SettingsStore::update_settings_file(...)` üzerinden tamamlanır.
 - `SettingsStore::update_user_settings(...)` yalnızca `test-support` altında mevcuttur; uygulama kodunda kalıcı yazma için kullanılmaz.
 
 **Gözlemci akışı.** Ayar değişimini dinlemek:
 
 ```rust
-cx.observe_global::<SettingsStore>(|cx| {
-    let theme = ThemeSettings::get_global(cx);
-    apply_theme(theme, cx);
+baglam.observe_global::<SettingsStore>(|baglam| {
+    let tema = ThemeSettings::get_global(baglam);
+    temayi_uygula(tema, baglam);
 }).detach();
 ```
 
@@ -154,20 +154,20 @@ cx.observe_global::<SettingsStore>(|cx| {
 **Aktif tema akışı.** Bir view içinden tema bileşenlerine ulaşmak:
 
 ```rust
-let theme = cx.theme();        // &Arc<Theme>
-let colors = theme.colors();   // &ThemeColors
-let status = theme.status();   // &StatusColors
-let players = theme.players(); // &PlayerColors
-let syntax = theme.syntax();   // &SyntaxTheme
+let tema = baglam.theme();          // &Arc<Theme>
+let renkler = tema.colors();        // &ThemeColors
+let durum = tema.status();          // &StatusColors
+let oyuncular = tema.players();     // &PlayerColors
+let sozdizimi = tema.syntax();      // &SyntaxTheme
 ```
 
 `cx.theme()` uzantı trait `theme::ActiveTheme` ile sağlanır; `App` üzerinde çalışır. Aktif tema `ThemeSettings` içindeki seçimden ve `SystemAppearance`'tan hesaplanır:
 
 ```rust
-pub fn reload_theme(cx: &mut App) {
-    let theme = configured_theme(cx);
-    GlobalTheme::update_theme(cx, theme);
-    cx.refresh_windows();
+pub fn reload_theme(baglam: &mut App) {
+    let tema = configured_theme(baglam);
+    GlobalTheme::update_theme(baglam, tema);
+    baglam.refresh_windows();
 }
 ```
 
@@ -182,8 +182,8 @@ pub fn reload_theme(cx: &mut App) {
 **Özel tema yükleme.** Bir kullanıcı temasını programatik olarak eklemek için:
 
 ```rust
-theme_settings::load_user_theme(&ThemeRegistry::global(cx), bytes)?;
-theme_settings::reload_theme(cx);
+theme_settings::load_user_theme(&ThemeRegistry::global(baglam), baytlar)?;
+theme_settings::reload_theme(baglam);
 ```
 
 `load_user_theme` JSON'u `ThemeFamilyContent` olarak seriden çıkarır, `refine_theme_family` ile gerçek `ThemeFamily` üretir ve `insert_theme_families` çağırır. `crates/theme_importer/` VS Code temalarından `theme_settings::ThemeContent` üretmek için yardımcılar içerir. Zed tarafında `load_user_themes_in_background` ve izleyici akışı dosya değişiminden sonra `theme_settings::reload_theme(cx)` çağırır.

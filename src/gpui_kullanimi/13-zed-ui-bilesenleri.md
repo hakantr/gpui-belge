@@ -172,10 +172,10 @@ pub trait ManagedView: Focusable + EventEmitter<DismissEvent> + Render {}
 Bir modal, popover veya bağlam menüsü kapatılmak istediğinde kendi entity context'inden `DismissEvent` yayar:
 
 ```rust
-impl EventEmitter<DismissEvent> for MyModal {}
+impl EventEmitter<DismissEvent> for ModalGorunumu {}
 
-fn dismiss(&mut self, cx: &mut Context<Self>) {
-    cx.emit(DismissEvent);
+fn kapat(&mut self, baglam: &mut Context<Self>) {
+    baglam.emit(DismissEvent);
 }
 ```
 

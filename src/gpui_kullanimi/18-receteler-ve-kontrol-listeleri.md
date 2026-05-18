@@ -10,7 +10,7 @@ Bu bölüm, önceki başlıklardaki API'leri günlük senaryolara oturtarak öze
 
 Bir Zed workspace penceresi açılırken adımlar şu sırayla işler:
 
-1. `zed::build_window_options(display_uuid, cx)` çağrılır.
+1. `zed::build_window_options(ekran_uuid, baglam)` çağrılır.
 2. Kök view olarak workspace veya multi-workspace entity oluşturulur.
 3. Başlık çubuğu için `TitleBar`/`PlatformTitleBar` yolu izlenir.
 4. Kök içerik `workspace::client_side_decorations(...)` ile sarılır.
@@ -21,23 +21,23 @@ Bir Zed workspace penceresi açılırken adımlar şu sırayla işler:
 Küçük modal benzeri pencerelerde tipik konfigürasyon aşağıdaki gibidir; ana pencere değil bir diyalog hedeflendiği için `WindowKind::Dialog` ve resize/minimize kısıtları kullanılır:
 
 ```rust
-cx.open_window(
+baglam.open_window(
     WindowOptions {
         titlebar: Some(TitlebarOptions {
-            title: Some("Dialog".into()),
+            title: Some("Diyalog".into()),
             appears_transparent: true,
             traffic_light_position: Some(point(px(12.), px(12.))),
         }),
-        window_bounds: Some(WindowBounds::centered(size(px(440.), px(300.)), cx)),
+        window_bounds: Some(WindowBounds::centered(size(px(440.), px(300.)), baglam)),
         is_resizable: false,
         is_minimizable: false,
         kind: WindowKind::Dialog,
-        app_id: Some(ReleaseChannel::global(cx).app_id().to_owned()),
+        app_id: Some(ReleaseChannel::global(baglam).app_id().to_owned()),
         ..Default::default()
     },
-    |window, cx| {
-        window.activate_window();
-        cx.new(|cx| DialogView::new(window, cx))
+    |pencere, baglam| {
+        pencere.activate_window();
+        baglam.new(|baglam| DiyalogGorunumu::new(pencere, baglam))
     },
 )?;
 ```
@@ -83,12 +83,12 @@ Sürükleme ve çift tıklama davranışı tek bir tıklama işleyicisi içinde 
 ```rust
 h_flex()
     .window_control_area(WindowControlArea::Drag)
-    .on_click(|event, window, _| {
-        if event.click_count() == 2 {
+    .on_click(|olay, pencere, _| {
+        if olay.click_count() == 2 {
             if cfg!(target_os = "macos") {
-                window.titlebar_double_click();
+                pencere.titlebar_double_click();
             } else {
-                window.zoom_window();
+                pencere.zoom_window();
             }
         }
     })
@@ -97,7 +97,7 @@ h_flex()
 Linux veya macOS'ta elle sürükleme başlatılması gerektiğinde fare hareketi sırasında şu çağrı yapılır:
 
 ```rust
-window.start_window_move();
+pencere.start_window_move();
 ```
 
 Windows tarafında `WindowControlArea::Drag` yerel hit-test üzerinden daha doğru sonucu verir; bu nedenle Windows'ta sürükleme için ayrı bir `start_window_move` çağrısına gerek kalmaz.
@@ -107,9 +107,9 @@ Windows tarafında `WindowControlArea::Drag` yerel hit-test üzerinden daha doğ
 İstemci tarafı süslemesi ile birlikte sunulan yeniden boyutlandırma tutamaçlarında kenar hesabı yapılıp ilgili `ResizeEdge` ile platform çağrısı tetiklenir:
 
 ```rust
-.on_mouse_down(MouseButton::Left, move |event, window, _| {
-    if let Some(edge) = resize_edge(event.position, shadow, size, tiling) {
-        window.start_window_resize(edge);
+.on_mouse_down(MouseButton::Left, move |olay, pencere, _| {
+    if let Some(kenar) = yeniden_boyutlandirma_kenari(olay.position, golge, boyut, doseme) {
+        pencere.start_window_resize(kenar);
     }
 })
 ```
@@ -121,11 +121,11 @@ Windows tarafında `WindowControlArea::Drag` yerel hit-test üzerinden daha doğ
 Tema akışı tüm pencerelere yansıtılırken ayar gözlemcisi içinden tek tek pencerelerin arka plan görünüşü güncellenir:
 
 ```rust
-cx.observe_global::<SettingsStore>(move |cx| {
-    for window in cx.windows() {
-        let appearance = cx.theme().window_background_appearance();
-        window.update(cx, |_, window, _| {
-            window.set_background_appearance(appearance);
+baglam.observe_global::<SettingsStore>(move |baglam| {
+    for pencere in baglam.windows() {
+        let gorunum = baglam.theme().window_background_appearance();
+        pencere.update(baglam, |_, pencere, _| {
+            pencere.set_background_appearance(gorunum);
         }).ok();
     }
 }).detach();
@@ -171,7 +171,7 @@ Aşağıdaki liste rehber boyunca anlatılan tuzakları tek bir noktada toparlar
 - **Async task çalışırken yok oluyor** — Dönen `Task` saklanmamış ya da detach edilmemiştir; drop edildiği anda iş iptal olur.
 - **Entity sızıntı** — Uzun yaşayan task veya abonelik içinde güçlü `Entity` yakalamak döngü üretir; bunun yerine `WeakEntity` kullanılmalıdır.
 - **Çizim güncellenmiyor** — Durum değişiminden sonra `cx.notify()` unutulmuştur; view aynı verilerle yeniden çizilir.
-- **Odak geri çağrısı tetiklenmiyor** — Element `.track_focus(&focus_handle)` ile ağaca bağlanmamış olabilir.
+- **Odak geri çağrısı tetiklenmiyor** — Element `.track_focus(&odak_tutamagi)` ile ağaca bağlanmamış olabilir.
 - **Özel başlık çubuğu altında içerik tıklanamıyor** — Sürükleme veya window control hitbox'ı fazla geniş tutulmuş ya da `.occlude()` yanlış yere konmuş olabilir.
 - **İstemci süslemesi gölge boşluğu** — `set_client_inset` ve dış sarmalayıcının padding/shadow değerleri birlikte yönetilmelidir; aralarındaki uyumsuzluk görünür bir boşluk üretir.
 
@@ -200,7 +200,7 @@ Yeni bir pencere eklenirken aşağıdaki kontrol listesi unutulan bir ayrıntı 
 
 Bu başlık altında rehber boyunca en çok sorulan dört konunun kısa özeti yer alır.
 
-**İleride pencere oluşturmak için izlenecek yol.** Workspace penceresi için başlangıç noktası `zed::build_window_options`'tır. Özel ve küçük bir pencere için doğrudan `cx.open_window(WindowOptions { ... }, |window, cx| cx.new(...))` çağrısı kullanılır. Kök view, `Render` uygulayan bir `Entity` olmalıdır.
+**İleride pencere oluşturmak için izlenecek yol.** Workspace penceresi için başlangıç noktası `zed::build_window_options`'tır. Özel ve küçük bir pencere için doğrudan `baglam.open_window(WindowOptions { ... }, |pencere, baglam| baglam.new(...))` çağrısı kullanılır. Kök view, `Render` uygulayan bir `Entity` olmalıdır.
 
 **Pencere dekorunun tanımlanması.** Linux için `WindowOptions.window_decorations = Some(WindowDecorations::Client/Server)` verilir. Çizim tarafında fiili sonuç `window.window_decorations()` ile okunur. Zed tarzı istemci süslemesi için `workspace::client_side_decorations` kullanılır. macOS ve Windows'ta özel başlık çubuğu için `TitlebarOptions { appears_transparent: true }` ya da `titlebar: None` ile `PlatformTitleBar` tercih edilir.
 

@@ -16,7 +16,7 @@ Metin sisteminin ana tipleri `crates/gpui/src/text_system.rs`, `style.rs` ve `el
 Pratikte stil ve vurgu birleşimi şu kalıpta görünür:
 
 ```rust
-let text = StyledText::new("Error: missing field")
+let metin = StyledText::new("Hata: eksik alan")
     .with_highlights([(0..5, HighlightStyle {
         color: Some(rgb(0xff0000).into()),
         font_weight: Some(FontWeight::BOLD),
@@ -27,7 +27,7 @@ div()
     .text_size(rems(0.875))
     .font_family(".SystemUIFont")
     .line_height(relative(1.4))
-    .child(text)
+    .child(metin)
 ```
 
 **Metin ölçümü ve yerleşim.** Metnin ne kadar yer kapladığı ve aktif stil değeri aşağıdaki noktalardan okunur:
@@ -54,11 +54,11 @@ Basit bir metin doğrudan `SharedString` olarak bir elementin alt öğesi şekli
 **`StyledText` kullanımı.** Vurgu ve font üzerine yazmaları fluent zincire eklenir:
 
 ```rust
-let text = StyledText::new("Open settings")
-    .with_highlights(vec![(0..4, highlight_style)])
-    .with_font_family_overrides(vec![(5..13, "ZedMono".into())]);
+let metin = StyledText::new("Ayarları aç")
+    .with_highlights(vec![(0..9, vurgu_stili)])
+    .with_font_family_overrides(vec![(0..13, "ZedMono".into())]);
 
-let layout = text.layout().clone();
+let yerlesim = metin.layout().clone();
 ```
 
 Önceden hesaplanmış `TextRun` listesi varsa vurguyu gecikmeli (`delayed`) uygulamak yerine `.with_runs(runs)` çağrısı yapılır. `with_default_highlights(&default_style, ranges)` ise üst öğe stili yerine açık bir `TextStyle`'ı baz alarak run üretir.
@@ -74,14 +74,14 @@ let layout = text.layout().clone();
 **`InteractiveText`.** Tıklama, hover ve tooltip ekleyen sarmalayıcıdır:
 
 ```rust
-InteractiveText::new("settings-link", StyledText::new("Open settings"))
-    .on_click(vec![0..13], |range_index, window, cx| {
-        window.dispatch_action(OpenSettings.boxed_clone(), cx);
+InteractiveText::new("ayarlar-baglantisi", StyledText::new("Ayarları aç"))
+    .on_click(vec![0..13], |_aralik_sirasi, pencere, baglam| {
+        pencere.dispatch_action(AyarlariAc.boxed_clone(), baglam);
     })
-    .on_hover(|index, event, window, cx| {
-        update_hover(index, event, window, cx);
+    .on_hover(|sira, olay, pencere, baglam| {
+        ustune_gelmeyi_guncelle(sira, olay, pencere, baglam);
     })
-    .tooltip(|index, window, cx| build_tooltip(index, window, cx))
+    .tooltip(|sira, pencere, baglam| ipucu_olustur(sira, pencere, baglam))
 ```
 
 Aralıklar yine byte index aralıklarıdır; Unicode metinde karakter sınırlarını yanlış hesaplamak hover ve tıklama eşleşmesini bozar. `on_click` yalnızca mouse down ile mouse up aynı verilen aralık içinde kaldığında dinleyiciyi tetikler. Yani bir aralıkta basıp başka bir aralıkta bırakmak tıklama sayılmaz.

@@ -10,18 +10,20 @@ Bir GPUI uygulamasının ilk adımı platform seçimidir. Platform, işletim sis
 use gpui::{App, AppContext as _, WindowOptions, div, prelude::*};
 use gpui_platform::application;
 
-struct Root;
+struct KokGorunum;
 
-impl Render for Root {
-    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
-        div().size_full().child("Hello")
+impl Render for KokGorunum {
+    fn render(&mut self, _pencere: &mut Window, _baglam: &mut Context<Self>) -> impl IntoElement {
+        div().size_full().child("Merhaba")
     }
 }
 
 fn main() {
-    application().run(|cx: &mut App| {
-        if let Err(error) = cx.open_window(WindowOptions::default(), |_, cx| cx.new(|_| Root)) {
-            eprintln!("failed to open window: {error:?}");
+    application().run(|baglam: &mut App| {
+        if let Err(hata) = baglam.open_window(WindowOptions::default(), |_, baglam| {
+            baglam.new(|_| KokGorunum)
+        }) {
+            eprintln!("pencere açılamadı: {hata:?}");
         }
     });
 }
@@ -41,20 +43,20 @@ Görsel olmayan senaryolar için ayrı bir başlatıcı vardır: `gpui_platform:
 `Application`, GPUI çalışmaya başlamadan önce kullanılan builder katmanıdır. Asset kaynağı, HTTP istemcisi ve çıkış politikası gibi süreç ömrü boyunca geçerli ayarlar burada kurulur. Tipik kurulum şu şekildedir:
 
 ```rust
-let app = gpui_platform::application()
-    .with_assets(Assets)
-    .with_http_client(http_client)
+let uygulama = gpui_platform::application()
+    .with_assets(Varliklar)
+    .with_http_client(http_istemcisi)
     .with_quit_mode(QuitMode::Default);
 
-app.on_open_urls(|urls| {
+uygulama.on_open_urls(|urller| {
     // Platform URL açma olayı.
 });
 
-app.on_reopen(|cx| {
-    cx.activate(true);
+uygulama.on_reopen(|baglam| {
+    baglam.activate(true);
 });
 
-app.run(|cx| {
+uygulama.run(|baglam| {
     // Genel kurulum, keymap, pencereler.
 });
 ```
@@ -154,7 +156,7 @@ Görsel arayüz olmadan da GPUI uygulaması başlatılabilir. Bu yol özellikle 
 Başsız bir uygulama şu biçimde başlatılır:
 
 ```rust
-gpui_platform::headless().run(|cx: &mut App| {
+gpui_platform::headless().run(|baglam: &mut App| {
     // Arka plan görevleri, asset yükleme, ağ IO; çizim yok.
 });
 ```
@@ -164,19 +166,19 @@ Bu yapı pencere açmaz, dolayısıyla görsel doğrulama veya ekran görüntüs
 **Ekran yakalama API'si.** Ekran yakalama akışı `oneshot` kanallar üzerinde kurulur ve ekran kareleri bir geri çağrıya iletilir:
 
 ```rust
-let supported = cx.update(|cx| cx.is_screen_capture_supported());
+let destekleniyor_mu = baglam.update(|baglam| baglam.is_screen_capture_supported());
 
-let sources_rx = cx.update(|cx| cx.screen_capture_sources());
-let sources = sources_rx.await??;
-if let Some(source) = sources.first() {
-    let stream_rx = source.stream(
-        cx.foreground_executor(),
-        Box::new(|frame| {
-            // frame: ScreenCaptureFrame
+let kaynak_alici = baglam.update(|baglam| baglam.screen_capture_sources());
+let kaynaklar = kaynak_alici.await??;
+if let Some(kaynak) = kaynaklar.first() {
+    let akis_alici = kaynak.stream(
+        baglam.foreground_executor(),
+        Box::new(|kare| {
+            // kare: ScreenCaptureFrame
         }),
     );
-    let stream = stream_rx.await??;
-    let metadata = stream.metadata()?;
+    let akis = akis_alici.await??;
+    let ust_veri = akis.metadata()?;
 }
 ```
 

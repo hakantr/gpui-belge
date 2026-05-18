@@ -7,11 +7,11 @@
 GPUI'de pencereyi açan ana API `cx.open_window(options, root_builder)`'dır. İlk parametre, pencerenin başlangıç davranışını anlatan `WindowOptions`; ikincisi ise pencerenin kök view'unu kuran closure'dır. Tipik kullanım şu kalıbı izler:
 
 ```rust
-let handle = cx.open_window(
+let tutamac = baglam.open_window(
     WindowOptions {
-        window_bounds: Some(WindowBounds::centered(size(px(900.), px(700.)), cx)),
+        window_bounds: Some(WindowBounds::centered(size(px(900.), px(700.)), baglam)),
         titlebar: Some(TitlebarOptions {
-            title: Some("My Window".into()),
+            title: Some("Pencerem".into()),
             appears_transparent: true,
             traffic_light_position: Some(point(px(9.), px(9.))),
         }),
@@ -22,14 +22,14 @@ let handle = cx.open_window(
         is_resizable: true,
         is_minimizable: true,
         window_min_size: Some(size(px(360.), px(240.))),
-        window_background: cx.theme().window_background_appearance(),
+        window_background: baglam.theme().window_background_appearance(),
         window_decorations: Some(gpui::WindowDecorations::Client),
-        app_id: Some(ReleaseChannel::global(cx).app_id().to_owned()),
+        app_id: Some(ReleaseChannel::global(baglam).app_id().to_owned()),
         ..Default::default()
     },
-    |window, cx| {
-        window.activate_window();
-        cx.new(|cx| MyRootView::new(window, cx))
+    |pencere, baglam| {
+        pencere.activate_window();
+        baglam.new(|baglam| KokGorunum::new(pencere, baglam))
     },
 )?;
 ```
@@ -63,9 +63,9 @@ let handle = cx.open_window(
 Zed'in ana pencere açma akışı `crates/zed/src/zed.rs::build_window_options` fonksiyonunda toplanır. Yeni bir workspace penceresi açılacağında bu fonksiyon tercih edilir:
 
 ```rust
-let options = zed::build_window_options(display_uuid, cx);
-let window = cx.open_window(options, |window, cx| {
-    cx.new(|cx| Workspace::new(/* ... */, window, cx))
+let secenekler = zed::build_window_options(ekran_uuid, baglam);
+let pencere = baglam.open_window(secenekler, |pencere, baglam| {
+    baglam.new(|baglam| Workspace::new(/* ... */, pencere, baglam))
 })?;
 ```
 
@@ -93,11 +93,11 @@ Modal veya About benzeri küçük pencerelerde bu fonksiyonu kullanmak yerine do
 Birden fazla ekran olduğunda hedef ekran, `cx.displays()` listesi üzerinden bulunur. Liste her ekran için kimlik, sınırlar ve UUID bilgisini sağlar:
 
 ```rust
-for display in cx.displays() {
-    let id = display.id();
-    let bounds = display.bounds();
-    let visible = display.visible_bounds();
-    let uuid = display.uuid().ok();
+for ekran in baglam.displays() {
+    let id = ekran.id();
+    let sinirlar = ekran.bounds();
+    let gorunur_sinirlar = ekran.visible_bounds();
+    let uuid = ekran.uuid().ok();
 }
 ```
 
@@ -105,8 +105,8 @@ Belirli bir ekrana pencere açmak için seçilen ekranın id'si seçeneklere ver
 
 ```rust
 WindowOptions {
-    display_id: Some(display.id()),
-    window_bounds: Some(WindowBounds::Windowed(bounds)),
+    display_id: Some(ekran.id()),
+    window_bounds: Some(WindowBounds::Windowed(sinirlar)),
     ..Default::default()
 }
 ```
@@ -185,12 +185,12 @@ Zed settings tipi `settings_content::workspace::WindowDecorations` yalnızca `cl
 Basit bir GPUI uygulamasında yerel başlık çubuğu kapatılır ve özel başlık çubuğu kök view içine yerleştirilir:
 
 ```rust
-cx.open_window(
+baglam.open_window(
     WindowOptions {
         titlebar: None,
         ..Default::default()
     },
-    |_, cx| cx.new(|_| MyView),
+    |_, baglam| baglam.new(|_| OrnekGorunum),
 )?;
 ```
 
@@ -205,9 +205,9 @@ div()
         h_flex()
             .window_control_area(WindowControlArea::Drag)
             .h(px(34.))
-            .child("Title")
+            .child("Başlık")
     )
-    .child(content)
+    .child(icerik)
 ```
 
 Windows tarafında başlık butonu (`caption button`) bölgeleri için `window_control_area` çağrısı kritik öneme sahiptir; yerel çarpışma testi bu alanlar üzerinden çözülür:
@@ -220,13 +220,15 @@ Windows tarafında başlık butonu (`caption button`) bölgeleri için `window_c
 Zed'de yeni bir workspace benzeri pencere yapıldığında özel başlık çubuğu sıfırdan yazılmaz; bunun yerine hazır `PlatformTitleBar` bileşeni kullanılır:
 
 ```rust
-let platform_titlebar = cx.new(|cx| PlatformTitleBar::new("my-titlebar", cx));
-
-platform_titlebar.update(cx, |titlebar, _| {
-    titlebar.set_children([my_left_or_center_content.into_any_element()]);
+let platform_baslik_cubugu = baglam.new(|baglam| {
+    PlatformTitleBar::new("baslik-cubugu", baglam)
 });
 
-platform_titlebar.into_any_element()
+platform_baslik_cubugu.update(baglam, |baslik_cubugu, _| {
+    baslik_cubugu.set_children([sol_veya_orta_icerik.into_any_element()]);
+});
+
+platform_baslik_cubugu.into_any_element()
 ```
 
 `PlatformTitleBar` hazır olarak şu işleri halleder:
@@ -256,22 +258,22 @@ Sol ve sağ kontrolleri hazır çizmek için iki yardımcı fonksiyon vardır:
 
 ```rust
 platform_title_bar::render_left_window_controls(
-    cx.button_layout(),
+    baglam.button_layout(),
     Box::new(workspace::CloseWindow),
-    window,
+    pencere,
 )
 
 platform_title_bar::render_right_window_controls(
-    cx.button_layout(),
+    baglam.button_layout(),
     Box::new(workspace::CloseWindow),
-    window,
+    pencere,
 )
 ```
 
 Kapatma butonu doğrudan `window.remove_window()` çağırmaz; bunun yerine Zed kapatma action'ını yönlendirir:
 
 ```rust
-window.dispatch_action(workspace::CloseWindow.boxed_clone(), cx);
+pencere.dispatch_action(workspace::CloseWindow.boxed_clone(), baglam);
 ```
 
 Böylece kaydedilmemiş arabellek (`dirty buffer`) kontrolü, kullanıcıya sorma diyaloğu, workspace kapatma mantığı ve kısayol ile aynı akış kullanılır.
@@ -289,7 +291,7 @@ Böylece kaydedilmemiş arabellek (`dirty buffer`) kontrolü, kullanıcıya sorm
 Zed'in istemci tarafı süsleme (`client-side decoration`) sarmalayıcısı tek bir yardımcı üzerinde toplanmıştır:
 
 ```rust
-workspace::client_side_decorations(element, window, cx, border_radius_tiling)
+workspace::client_side_decorations(oge, pencere, baglam, doseme_kenar_yaricapi)
 ```
 
 Bu sarmalayıcının yaptığı işler şunlardır:
@@ -472,8 +474,8 @@ pub enum WindowBounds {
 **Saklama akışı.** Sınırlar saklanırken tipik kullanım şudur:
 
 ```rust
-let bounds = window.inner_window_bounds();
-serialize(bounds, display_uuid);
+let sinirlar = pencere.inner_window_bounds();
+serilestir(sinirlar, ekran_uuid);
 ```
 
 Zed varsayılan pencere boyutunu saklarken `inner_window_bounds()` kullanır. Workspace serileştirilirken bazı akışlarda `window.window_bounds()` da tercih edilir. İkisi arasındaki fark, dahil edilen platform veya başlık çubuğu dikdörtgeninin farklı olmasından kaynaklanır. Tam ekran ya da ekranı kaplama durumlarında enum içindeki sınırlar, geri yüklenecek pencereli sınırları temsil eder. Ekran UUID'si ayrı saklanır; kullanıcı sonradan monitörü ayırabileceği için bu kimliğin pencere sınırlarından bağımsız tutulması gerekir.
@@ -488,9 +490,9 @@ Zed varsayılan pencere boyutunu saklarken `inner_window_bounds()` kullanır. Wo
 Sınır değişimini izlemek için abonelik kullanılır:
 
 ```rust
-cx.observe_window_bounds(window, |this, window, cx| {
-    let bounds = window.inner_window_bounds();
-    this.persist_bounds(bounds);
+baglam.observe_window_bounds(pencere, |gorunum, pencere, _baglam| {
+    let sinirlar = pencere.inner_window_bounds();
+    gorunum.sinirlari_kaydet(sinirlar);
 }).detach();
 ```
 

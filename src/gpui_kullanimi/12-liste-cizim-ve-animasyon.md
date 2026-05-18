@@ -25,12 +25,12 @@
 **Element üzerine bağlama.** Bir handle'ı div'e iliştirmek için stateful scroll API'leri kullanılır:
 
 ```rust
-let handle = ScrollHandle::new();
+let tutamac = ScrollHandle::new();
 
 div()
-    .id("list")
+    .id("liste")
     .overflow_y_scroll()
-    .track_scroll(&handle)
+    .track_scroll(&tutamac)
     .child(/* ... */)
 ```
 
@@ -39,8 +39,8 @@ div()
 `ScrollAnchor` (`div.rs:3332+`) bir handle ile çalışan yardımcıdır. Ağaçta doğrudan alt öğe olmayan bir elementin görünür kalmasını ister:
 
 ```rust
-let anchor = ScrollAnchor::for_handle(handle.clone());
-anchor.scroll_to(window, cx);
+let capa = ScrollAnchor::for_handle(tutamac.clone());
+capa.scroll_to(pencere, baglam);
 ```
 
 **Tuzaklar.** Scroll handle ile çalışırken atlanan noktalar:
@@ -64,23 +64,23 @@ GPUI'de büyük listeler için iki çekirdek element vardır. İkisi farklı lis
 **Değişken yükseklikli liste.** Durum view içinde tutulur ve veri seti değiştiğinde uygun yardımcılar çağrılır:
 
 ```rust
-struct LogView {
-    rows: Vec<Row>,
-    list_state: ListState,
+struct GunlukGorunumu {
+    satirlar: Vec<Satir>,
+    liste_durumu: ListState,
 }
 
-impl LogView {
+impl GunlukGorunumu {
     fn new() -> Self {
         Self {
-            rows: Vec::new(),
-            list_state: ListState::new(0, ListAlignment::Top, px(300.)),
+            satirlar: Vec::new(),
+            liste_durumu: ListState::new(0, ListAlignment::Top, px(300.)),
         }
     }
 
-    fn replace_rows(&mut self, rows: Vec<Row>, cx: &mut Context<Self>) {
-        self.rows = rows;
-        self.list_state.reset(self.rows.len());
-        cx.notify();
+    fn satirlari_degistir(&mut self, satirlar: Vec<Satir>, baglam: &mut Context<Self>) {
+        self.satirlar = satirlar;
+        self.liste_durumu.reset(self.satirlar.len());
+        baglam.notify();
     }
 }
 ```
@@ -88,8 +88,8 @@ impl LogView {
 Çizim aşamasında item builder closure'u verilir:
 
 ```rust
-list(self.list_state.clone(), |ix, window, cx| {
-    render_row(ix, window, cx).into_any_element()
+list(self.liste_durumu.clone(), |sira, pencere, baglam| {
+    satiri_render_et(sira, pencere, baglam).into_any_element()
 })
 .with_sizing_behavior(ListSizingBehavior::Auto)
 ```
@@ -125,14 +125,14 @@ list(self.list_state.clone(), |ix, window, cx| {
 **Uniform liste.** Sabit yükseklikli item'larda virtualizasyon daha agresiftir:
 
 ```rust
-let scroll_handle = self.scroll_handle.clone();
+let kaydirma_tutamagi = self.kaydirma_tutamagi.clone();
 
-uniform_list("search-results", self.items.len(), move |range, window, cx| {
-    range
-        .map(|ix| render_result(ix, window, cx))
+uniform_list("arama-sonuclari", self.ogeler.len(), move |aralik, pencere, baglam| {
+    aralik
+        .map(|sira| sonucu_render_et(sira, pencere, baglam))
         .collect()
 })
-.track_scroll(&scroll_handle)
+.track_scroll(&kaydirma_tutamagi)
 .with_width_from_item(Some(0))
 ```
 
@@ -178,7 +178,7 @@ trait Asset {
 **Görsel elementi.** `img` çağrısı farklı kaynak tiplerini kabul eder ve yükleme/yedek slotları sunar:
 
 ```rust
-img(PathBuf::from("path/to/icon.png"))
+img(PathBuf::from("yol/ikon.png"))
     .w(px(24.))
     .h(px(24.))
     .object_fit(ObjectFit::Contain)
@@ -226,15 +226,15 @@ GPUI asset katmanı üç seviyelidir ve her seviye ayrı bir sorumluluk taşır:
 
 ```rust
 div()
-    .image_cache(retain_all("avatars"))
-    .child(img(avatar_uri.clone()).object_fit(ObjectFit::Cover))
+    .image_cache(retain_all("avatarlar"))
+    .child(img(avatar_kaynagi.clone()).object_fit(ObjectFit::Cover))
 ```
 
 Alternatif olarak sarmalayıcı element kullanılabilir:
 
 ```rust
-image_cache(retain_all("preview-cache"))
-    .child(img(preview_path.clone()))
+image_cache(retain_all("onizleme-onbellegi"))
+    .child(img(onizleme_yolu.clone()))
 ```
 
 **`RetainAllImageCache`.** Ana önbellek uygulaması birkaç metot sağlar:
@@ -247,14 +247,14 @@ image_cache(retain_all("preview-cache"))
 **Özel önbellek.** Özel bir önbellek mantığı gerektiğinde `ImageCache` trait'i uygulanır:
 
 ```rust
-impl ImageCache for MyImageCache {
+impl ImageCache for GorselOnbellegi {
     fn load(
         &mut self,
-        resource: &Resource,
-        window: &mut Window,
-        cx: &mut App,
+        kaynak: &Resource,
+        pencere: &mut Window,
+        baglam: &mut App,
     ) -> Option<Result<Arc<RenderImage>, ImageCacheError>> {
-        self.load_or_poll(resource, window, cx)
+        self.yukle_veya_sorgula(kaynak, pencere, baglam)
     }
 }
 ```
@@ -275,19 +275,19 @@ GPUI doğrudan path API'si yerine `canvas` elementi ve `PathBuilder` ile vektör
 
 ```rust
 canvas(
-    |bounds, window, _cx| {
+    |sinirlar, pencere, _baglam| {
         // prepaint: hitbox, yerleşim zamanlı durum
-        window.insert_hitbox(bounds, HitboxBehavior::Normal)
+        pencere.insert_hitbox(sinirlar, HitboxBehavior::Normal)
     },
-    |bounds, _hitbox, window, _cx| {
-        // paint: window.paint_path(...) çağrıları
-        let mut path = PathBuilder::fill();
-        path.move_to(bounds.origin);
-        path.line_to(bounds.bottom_left());
-        path.line_to(bounds.bottom_right());
-        path.close();
-        if let Ok(built) = path.build() {
-            window.paint_path(built, rgb(0x4f46e5));
+    |sinirlar, _isabet_kutusu, pencere, _baglam| {
+        // paint: pencere.paint_path(...) çağrıları
+        let mut yol = PathBuilder::fill();
+        yol.move_to(sinirlar.origin);
+        yol.line_to(sinirlar.bottom_left());
+        yol.line_to(sinirlar.bottom_right());
+        yol.close();
+        if let Ok(olusan) = yol.build() {
+            pencere.paint_path(olusan, rgb(0x4f46e5));
         }
     },
 )
@@ -347,7 +347,7 @@ anchored()
     .position(point(px(120.), px(80.)))
     .offset(point(px(0.), px(4.)))
     .snap_to_window_with_margin(Edges::all(px(8.)))
-    .child(menu_view.into_any_element())
+    .child(menu_gorunumu.into_any_element())
 ```
 
 **API.** Konumlandırmayı belirleyen başlıca metotlar şunlardır:
@@ -377,20 +377,20 @@ Anchored element ağaca normal bir alt öğe gibi eklenir; ancak yerleşim fazı
 `canvas` ve özel `Element::paint` içinde GPU'ya gönderilen primitive'ler şu çağrılarla üretilir:
 
 ```rust
-window.paint_quad(fill(bounds, rgb(0xeeeeee)));
+pencere.paint_quad(fill(sinirlar, rgb(0xeeeeee)));
 
-window.paint_quad(
+pencere.paint_quad(
     quad(
-        bounds,
-        Corners::all(px(8.)),                  // corner_radii
-        rgb(0xffffff),                         // background
-        Edges::all(px(1.)),                    // border_widths
-        rgb(0xdddddd),                         // border_color
+        sinirlar,
+        Corners::all(px(8.)),                  // köşe yarıçapları
+        rgb(0xffffff),                         // arka plan
+        Edges::all(px(1.)),                    // kenarlık kalınlıkları
+        rgb(0xdddddd),                         // kenarlık rengi
         BorderStyle::Solid,                    // veya Dashed
     ),
 );
 
-window.paint_quad(outline(bounds, rgb(0xff0000), BorderStyle::Solid));
+pencere.paint_quad(outline(sinirlar, rgb(0xff0000), BorderStyle::Solid));
 ```
 
 **`PaintQuad` builder yardımcıları** (`window.rs:5848+`):
@@ -446,8 +446,8 @@ window.paint_quad(outline(bounds, rgb(0xff0000), BorderStyle::Solid));
 **Jenerik asset yükleme.** Asset bekleme ve önbellek paylaşımı için üç yardımcı bulunur:
 
 ```rust
-if let Some(result) = window.use_asset::<MyAsset>(&source, cx) {
-    render_loaded(result, window, cx);
+if let Some(sonuc) = pencere.use_asset::<BenimVarligim>(&kaynak, baglam) {
+    yukleneni_render_et(sonuc, pencere, baglam);
 }
 ```
 
@@ -497,10 +497,10 @@ use std::time::Duration;
 div()
     .size(px(100.))
     .with_animation(
-        "grow",
+        "buyu",
         Animation::new(Duration::from_millis(500))
             .with_easing(gpui::ease_in_out),
-        |el, delta| el.size(px(100. + 100. * delta)),
+        |oge, ilerleme| oge.size(px(100. + 100. * ilerleme)),
     )
 ```
 

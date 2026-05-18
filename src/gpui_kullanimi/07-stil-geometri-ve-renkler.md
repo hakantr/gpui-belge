@@ -55,11 +55,11 @@ GPUI üç farklı piksel birimi kullanır. Ekran ölçeği değiştiğinde hangi
 Yardımcı yapıcıları sıklıkla bu kalıpta görünür:
 
 ```rust
-let p = px(12.0);                  // Pixels
-let r = rems(1.5);                 // Rems
-let p2 = point(px(10.), px(20.));  // Point<Pixels>
-let s = size(px(100.), px(40.));   // Size<Pixels>
-let b = Bounds::from_corners(point(px(0.), px(0.)), point(px(100.), px(100.)));
+let piksel = px(12.0);             // Pixels
+let rem = rems(1.5);               // Rems
+let nokta = point(px(10.), px(20.)); // Point<Pixels>
+let boyut = size(px(100.), px(40.)); // Size<Pixels>
+let sinirlar = Bounds::from_corners(point(px(0.), px(0.)), point(px(100.), px(100.)));
 ```
 
 **Diğer birimler.** Pixels dışındaki uzunluk tipleri farklı senaryolar için ayrılmıştır:
@@ -111,10 +111,10 @@ GPUI renkleri iki temel tipte ifade eder:
 Yapıcı çağrıları sıklıkla şu biçimde görünür:
 
 ```rust
-let red = rgb(0xff0000);                    // Rgba, alfa 1.0
-let translucent = rgba(0xff000080);         // 0xRRGGBBAA
-let h = hsla(0.0, 1.0, 0.5, 1.0);           // saf kırmızı
-let grey = opaque_grey(0.5, 1.0);           // gri yardımcısı
+let kirmizi = rgb(0xff0000);                // Rgba, alfa 1.0
+let yari_saydam = rgba(0xff000080);         // 0xRRGGBBAA
+let hsl_rengi = hsla(0.0, 1.0, 0.5, 1.0);   // saf kırmızı
+let gri = opaque_grey(0.5, 1.0);            // gri yardımcısı
 ```
 
 **Hazır renk sabitleri.** Tümü `pub const fn ... -> Hsla` biçiminde tanımlıdır (`color.rs:344+`):
@@ -147,7 +147,7 @@ Bu sabitler Zed tasarım sisteminden bağımsızdır; tema renklerine ihtiyaç d
 ```rust
 solid_background(rgb(0xffffff))
 linear_gradient(
-    angle_deg,
+    derece_acisi,
     linear_color_stop(rgb(0x000000), 0.0),
     linear_color_stop(rgb(0xffffff), 1.0),
 )
@@ -177,18 +177,18 @@ UI ağacı her çizimde yeniden oluşturulduğu için string ve URI kopyalama ma
 Render içinde her seferinde `String` üretip kopyalamak yerine entity verisinde `SharedString` saklamak yaygın bir desendir:
 
 ```rust
-struct Header { title: SharedString }
+struct Baslik { baslik: SharedString }
 
-impl Header {
-    fn set_title(&mut self, title: impl Into<SharedString>, cx: &mut Context<Self>) {
-        self.title = title.into();
-        cx.notify();
+impl Baslik {
+    fn basligi_ayarla(&mut self, baslik: impl Into<SharedString>, baglam: &mut Context<Self>) {
+        self.baslik = baslik.into();
+        baglam.notify();
     }
 }
 
-impl Render for Header {
+impl Render for Baslik {
     fn render(&mut self, _: &mut Window, _: &mut Context<Self>) -> impl IntoElement {
-        div().child(self.title.clone())
+        div().child(self.baslik.clone())
     }
 }
 ```
@@ -231,11 +231,11 @@ pub enum WindowAppearance {
 Zed örüntüsü `crates/zed/src/main.rs` içinde tema seçimine şu şekilde bağlanır:
 
 ```rust
-cx.observe_window_appearance(window, |_, window, cx| {
-    let appearance = window.appearance();
-    *SystemAppearance::global_mut(cx) = SystemAppearance(appearance.into());
-    theme_settings::reload_theme(cx);
-    theme_settings::reload_icon_theme(cx);
+baglam.observe_window_appearance(pencere, |_, pencere, baglam| {
+    let gorunum = pencere.appearance();
+    *SystemAppearance::global_mut(baglam) = SystemAppearance(gorunum.into());
+    theme_settings::reload_theme(baglam);
+    theme_settings::reload_icon_theme(baglam);
 }).detach();
 ```
 
