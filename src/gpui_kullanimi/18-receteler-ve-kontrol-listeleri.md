@@ -12,13 +12,13 @@ Bir Zed workspace penceresi açılırken adımlar şu sırayla işler:
 
 1. `zed::build_window_options(display_uuid, cx)` çağrılır.
 2. Root view olarak workspace veya multi-workspace entity oluşturulur.
-3. Titlebar için `TitleBar`/`PlatformTitleBar` yolu izlenir.
+3. Başlık çubuğu için `TitleBar`/`PlatformTitleBar` yolu izlenir.
 4. Root içerik `workspace::client_side_decorations(...)` ile sarılır.
-5. Close işlemi için `workspace::CloseWindow` action'ı dispatch edilir.
+5. Kapatma işlemi için `workspace::CloseWindow` action'ı dispatch edilir.
 
-#### Küçük Dialog Penceresi
+#### Küçük Diyalog Penceresi
 
-Küçük modal benzeri pencerelerde tipik konfigürasyon aşağıdaki gibidir; ana pencere değil bir dialog hedeflendiği için `WindowKind::Dialog` ve resize/minimize kısıtları kullanılır:
+Küçük modal benzeri pencerelerde tipik konfigürasyon aşağıdaki gibidir; ana pencere değil bir diyalog hedeflendiği için `WindowKind::Dialog` ve resize/minimize kısıtları kullanılır:
 
 ```rust
 cx.open_window(
@@ -42,9 +42,9 @@ cx.open_window(
 )?;
 ```
 
-#### Transparent/Blurred Notification
+#### Saydam/Bulanık Bildirim
 
-Bildirim ve overlay pencerelerinde tipik olarak titlebar kapatılır, pencere focus almaz ve arka plan saydam olarak ayarlanır:
+Bildirim ve kaplama pencerelerinde tipik olarak başlık çubuğu kapatılır, pencere odak almaz ve arka plan saydam olarak ayarlanır:
 
 ```rust
 WindowOptions {
@@ -60,7 +60,7 @@ WindowOptions {
 }
 ```
 
-Blur isteniyorsa `Transparent` yerine `Blurred` kullanılır; bunun için içerik root'unun tamamen opak bir arka plan çizmediğinden emin olmak gerekir, aksi halde blur görünmez kalır.
+Bulanıklık isteniyorsa `Transparent` yerine `Blurred` kullanılır; bunun için içerik kökünün tamamen opak bir arka plan çizmediğinden emin olmak gerekir, aksi halde bulanıklık görünmez kalır.
 
 #### Platforma Göre UI Ayırma
 
@@ -74,11 +74,11 @@ match PlatformStyle::platform() {
 }
 ```
 
-Derleme zamanı farkı gerekiyorsa `cfg!(target_os = "...")` veya `#[cfg(...)]` tercih edilir. Çalışma zamanı styling için `PlatformStyle` daha okunaklıdır.
+Derleme zamanı farkı gerekiyorsa `cfg!(target_os = "...")` veya `#[cfg(...)]` tercih edilir. Çalışma zamanı stillendirmesi için `PlatformStyle` daha okunaklıdır.
 
-#### Titlebar Drag ve Double Click
+#### Başlık Çubuğu Sürükleme ve Çift Tıklama
 
-Drag ve double-click davranışı tek bir click handler içinde toplanır. Double-click'te platforma göre native ya da fluent helper kullanılır:
+Sürükleme ve çift tıklama davranışı tek bir tıklama işleyicisi içinde toplanır. Çift tıklamada platforma göre yerel ya da fluent yardımcı kullanılır:
 
 ```rust
 h_flex()
@@ -94,17 +94,17 @@ h_flex()
     })
 ```
 
-Linux veya macOS'ta elle drag başlatılması gerektiğinde mouse move sırasında şu çağrı yapılır:
+Linux veya macOS'ta elle sürükleme başlatılması gerektiğinde fare hareketi sırasında şu çağrı yapılır:
 
 ```rust
 window.start_window_move();
 ```
 
-Windows tarafında `WindowControlArea::Drag` native hit-test üzerinden daha doğru sonucu verir; bu nedenle Windows'ta drag için ayrı bir `start_window_move` çağrısına gerek kalmaz.
+Windows tarafında `WindowControlArea::Drag` yerel hit-test üzerinden daha doğru sonucu verir; bu nedenle Windows'ta sürükleme için ayrı bir `start_window_move` çağrısına gerek kalmaz.
 
-#### Client-Side Resize Handle
+#### İstemci Tarafı Yeniden Boyutlandırma Tutamacı
 
-Client-side decoration ile birlikte sunulan resize handle'larında kenar hesabı yapılıp ilgili `ResizeEdge` ile platform çağrısı tetiklenir:
+İstemci tarafı süslemesi ile birlikte sunulan yeniden boyutlandırma tutamaçlarında kenar hesabı yapılıp ilgili `ResizeEdge` ile platform çağrısı tetiklenir:
 
 ```rust
 .on_mouse_down(MouseButton::Left, move |event, window, _| {
@@ -114,11 +114,11 @@ Client-side decoration ile birlikte sunulan resize handle'larında kenar hesabı
 })
 ```
 
-Cursor stilinin de aynı kenara göre `ResizeUpDown`, `ResizeLeftRight`, `ResizeUpLeftDownRight` veya `ResizeUpRightDownLeft` olarak ayarlanması gerekir; aksi halde resize bölgesinde görsel ipucu eksik kalır.
+İmleç stilinin de aynı kenara göre `ResizeUpDown`, `ResizeLeftRight`, `ResizeUpLeftDownRight` veya `ResizeUpRightDownLeft` olarak ayarlanması gerekir; aksi halde yeniden boyutlandırma bölgesinde görsel ipucu eksik kalır.
 
 #### Tema Değişince Pencere Arka Planını Güncelleme
 
-Tema akışı tüm pencerelere yansıtılırken settings observer içinden tek tek pencerelerin background appearance'ı güncellenir:
+Tema akışı tüm pencerelere yansıtılırken ayar gözlemcisi içinden tek tek pencerelerin arka plan görünüşü güncellenir:
 
 ```rust
 cx.observe_global::<SettingsStore>(move |cx| {
@@ -135,11 +135,11 @@ Zed ana uygulaması bu deseni zaten kullanır.
 
 #### Git Graph Özel Komut Task'ı
 
-Git Graph commit context menu'sünden özel bir task çalıştırmak için global `tasks.json` içine `git-command` tag'li bir task eklenir. Worktree-local task'lar bu akışta desteklenmez. Task seçili commit ve repository context'iyle çözülür; varsayılan çalışma dizini seçili repository root'udur.
+Git Graph commit bağlam menüsünden özel bir task çalıştırmak için global `tasks.json` içine `git-command` etiketli bir task eklenir. Worktree yerel task'lar bu akışta desteklenmez. Task seçili commit ve repository bağlamıyla çözülür; varsayılan çalışma dizini seçili repository köküdür.
 
 Desteklenen Git değişkenleri şu şekildedir:
 
-Bu bağlamda yalnız Git değişkenleri sağlanır. `ZED_FILE`, `ZED_SELECTED_TEXT`, `ZED_WORKTREE_ROOT`, `ZED_MAIN_GIT_WORKTREE` gibi editor/worktree değişkenleri varsayılan değer taşımadıkça çözümlenmez.
+Bu bağlamda yalnız Git değişkenleri sağlanır. `ZED_FILE`, `ZED_SELECTED_TEXT`, `ZED_WORKTREE_ROOT`, `ZED_MAIN_GIT_WORKTREE` gibi editör/worktree değişkenleri varsayılan değer taşımadıkça çözümlenmez.
 
 - `ZED_GIT_SHA`
 - `ZED_GIT_SHA_SHORT`
@@ -163,17 +163,17 @@ Tipik bir tanım şöyledir:
 
 Aşağıdaki liste rehber boyunca anlatılan tuzakları tek bir noktada toparlar; her madde belirtisi ile birlikte altta yatan nedeni de işaret eder.
 
-- **İstenen decoration'a güvenme** — `WindowOptions.window_decorations` yalnız bir istektir. Render sırasında fiili sonucu `window.window_decorations()` çağrısı verir; karar bu sonuca dayanmalıdır.
-- **Blur görünmüyor** — Root view veya tema tamamen opak bir renk çiziyor olabilir. Blur efektinin görünmesi için transparan bir surface ve içerikte alfa bırakılması şarttır.
+- **İstenen süslemeye güvenme** — `WindowOptions.window_decorations` yalnız bir istektir. Çizim sırasında fiili sonucu `window.window_decorations()` çağrısı verir; karar bu sonuca dayanmalıdır.
+- **Bulanıklık görünmüyor** — Root view veya tema tamamen opak bir renk çiziyor olabilir. Bulanıklık efektinin görünmesi için saydam bir surface ve içerikte alfa bırakılması şarttır.
 - **Linux kontrol butonları yanlış tarafta** — Doğru kaynak `cx.button_layout()`'tur ve değişimi `observe_button_layout_changed` ile izlenmelidir.
-- **Windows caption butonları tıklanmıyor** — Butonlarda `window_control_area(Close/Max/Min)` çağrısının eksik kalması native hit-test'i bozar.
-- **Close davranışı atlanıyor** — Zed workspace penceresinde doğrudan `remove_window` yerine `workspace::CloseWindow` action'ı dispatch edilmelidir; aksi halde dirty buffer ve kullanıcı onayı akışları atlanır.
+- **Windows başlık butonları tıklanmıyor** — Butonlarda `window_control_area(Close/Max/Min)` çağrısının eksik kalması yerel hit-test'i bozar.
+- **Kapatma davranışı atlanıyor** — Zed workspace penceresinde doğrudan `remove_window` yerine `workspace::CloseWindow` action'ı dispatch edilmelidir; aksi halde kirli buffer ve kullanıcı onayı akışları atlanır.
 - **Async task çalışırken yok oluyor** — Dönen `Task` saklanmamış ya da detach edilmemiştir; drop edildiği anda iş iptal olur.
-- **Entity leak** — Uzun yaşayan task veya subscription içinde güçlü `Entity` yakalamak döngü üretir; bunun yerine `WeakEntity` kullanılmalıdır.
-- **Render güncellenmiyor** — State değişiminden sonra `cx.notify()` unutulmuştur; view aynı verilerle yeniden çizilir.
-- **Focus callback'i fire etmiyor** — Element `.track_focus(&focus_handle)` ile ağaca bağlanmamış olabilir.
-- **Custom titlebar altında içerik tıklanamıyor** — Drag veya window control hitbox'ı fazla geniş tutulmuş ya da `.occlude()` yanlış yere konmuş olabilir.
-- **Client decoration shadow boşluğu** — `set_client_inset` ve dış sarmalayıcının padding/shadow değerleri birlikte yönetilmelidir; aralarındaki uyumsuzluk görünür bir boşluk üretir.
+- **Entity sızıntı** — Uzun yaşayan task veya abonelik içinde güçlü `Entity` yakalamak döngü üretir; bunun yerine `WeakEntity` kullanılmalıdır.
+- **Çizim güncellenmiyor** — Durum değişiminden sonra `cx.notify()` unutulmuştur; view aynı verilerle yeniden çizilir.
+- **Odak geri çağrısı tetiklenmiyor** — Element `.track_focus(&focus_handle)` ile ağaca bağlanmamış olabilir.
+- **Özel başlık çubuğu altında içerik tıklanamıyor** — Sürükleme veya window control hitbox'ı fazla geniş tutulmuş ya da `.occlude()` yanlış yere konmuş olabilir.
+- **İstemci süslemesi gölge boşluğu** — `set_client_inset` ve dış sarmalayıcının padding/shadow değerleri birlikte yönetilmelidir; aralarındaki uyumsuzluk görünür bir boşluk üretir.
 
 ## Yeni Pencere Eklerken Kontrol Listesi
 
@@ -181,32 +181,32 @@ Yeni bir pencere eklenirken aşağıdaki kontrol listesi unutulan bir ayrıntı 
 
 1. Bu pencerenin workspace mi, modal mı, popup mu olduğuna karar verilir ve uygun `WindowKind` seçilir.
 2. Ana Zed penceresi ise `build_window_options` kullanılır.
-3. Bounds geri yüklenecekse `WindowBounds` persist edilir.
+3. Bounds geri yüklenecekse `WindowBounds` kalıcılaştırılır.
 4. Hangi display'de açılacağı belirlenir; `display_id` veya `display_uuid` seçilir.
-5. Titlebar native mi, custom mı olacak? `TitlebarOptions` ile `PlatformTitleBar` arasındaki karar verilir.
+5. Başlık çubuğu yerel mi, özel mi olacak? `TitlebarOptions` ile `PlatformTitleBar` arasındaki karar verilir.
 6. Linux dekorasyon modu ayardan geliyorsa `window_decorations` bağlanır.
-7. Client decoration varsa wrapper, inset, resize handle ve tiling durumu eklenir.
-8. Close action'ı doğrudan pencereyi mi kapatmalı, yoksa workspace close akışını mı tetiklemeli, belirlenir.
-9. Blur veya transparent gerekiyorsa `window_background` ile root alpha uyumu kontrol edilir.
-10. Focus başlangıcı doğru mu? `focus`, `show`, `activate_window` ve focus handle gözden geçirilir.
-11. Minimum size gerekli mi, sorulur.
+7. İstemci süslemesi varsa sarmalayıcı, inset, yeniden boyutlandırma tutamacı ve tiling durumu eklenir.
+8. Kapatma action'ı doğrudan pencereyi mi kapatmalı, yoksa workspace kapatma akışını mı tetiklemeli, belirlenir.
+9. Bulanıklık veya saydamlık gerekiyorsa `window_background` ile kök alfa uyumu kontrol edilir.
+10. Odak başlangıcı doğru mu? `focus`, `show`, `activate_window` ve focus handle gözden geçirilir.
+11. Minimum boyutu gerekli mi, sorulur.
 12. App id ve Linux ikonu gerekiyor mu, kontrol edilir.
-13. macOS native tabbing isteniyorsa `tabbing_identifier` ayarlanır.
-14. Settings veya tema değişiminde arka planın güncellenip güncellenmeyeceği planlanır.
-15. Button layout değişiminde titlebar'ın yeniden render edilip edilmeyeceği gözden geçirilir.
+13. macOS yerel sekmeleme isteniyorsa `tabbing_identifier` ayarlanır.
+14. Ayar veya tema değişiminde arka planın güncellenip güncellenmeyeceği planlanır.
+15. Buton yerleşim değişiminde başlık çubuğunun yeniden çizilip çizilmeyeceği gözden geçirilir.
 16. Testte timer gerekiyorsa GPUI executor timer'ı kullanılır.
 
 ## Kısa Cevaplar
 
 Bu başlık altında rehber boyunca en çok sorulan dört konunun kısa özeti yer alır.
 
-**İleride pencere oluşturmak için izlenecek yol.** Workspace penceresi için başlangıç noktası `zed::build_window_options`'tır. Özel ve küçük bir pencere için doğrudan `cx.open_window(WindowOptions { ... }, |window, cx| cx.new(...))` çağrısı kullanılır. Root view, `Render` implement eden bir `Entity` olmalıdır.
+**İleride pencere oluşturmak için izlenecek yol.** Workspace penceresi için başlangıç noktası `zed::build_window_options`'tır. Özel ve küçük bir pencere için doğrudan `cx.open_window(WindowOptions { ... }, |window, cx| cx.new(...))` çağrısı kullanılır. Root view, `Render` uygulayan bir `Entity` olmalıdır.
 
-**Pencere dekorunun tanımlanması.** Linux için `WindowOptions.window_decorations = Some(WindowDecorations::Client/Server)` verilir. Render tarafında fiili sonuç `window.window_decorations()` ile okunur. Zed tarzı client decoration için `workspace::client_side_decorations` kullanılır. macOS ve Windows'ta özel titlebar için `TitlebarOptions { appears_transparent: true }` ya da `titlebar: None` ile `PlatformTitleBar` tercih edilir.
+**Pencere dekorunun tanımlanması.** Linux için `WindowOptions.window_decorations = Some(WindowDecorations::Client/Server)` verilir. Çizim tarafında fiili sonuç `window.window_decorations()` ile okunur. Zed tarzı istemci süslemesi için `workspace::client_side_decorations` kullanılır. macOS ve Windows'ta özel başlık çubuğu için `TitlebarOptions { appears_transparent: true }` ya da `titlebar: None` ile `PlatformTitleBar` tercih edilir.
 
-**Kontrol butonlarının yönetimi.** Zed içinde `platform_title_bar::render_left_window_controls` ve `render_right_window_controls` kullanılır. Linux'ta `cx.button_layout()` ve `window.window_controls()` sonucu belirleyicidir. Windows'ta butonlar `WindowControlArea::{Min, Max, Close}` ile native hit-test'e bağlanır. Close için workspace akışında `CloseWindow` action'ı dispatch edilir.
+**Kontrol butonlarının yönetimi.** Zed içinde `platform_title_bar::render_left_window_controls` ve `render_right_window_controls` kullanılır. Linux'ta `cx.button_layout()` ve `window.window_controls()` sonucu belirleyicidir. Windows'ta butonlar `WindowControlArea::{Min, Max, Close}` ile yerel hit-test'e bağlanır. Kapatma için workspace akışında `CloseWindow` action'ı dispatch edilir.
 
-**Blur yönetiminin işletim sistemine göre uygulanması.** Pencere açılırken veya tema değiştiğinde `window.set_background_appearance(...)` çağrılır. Zed tema akışı `opaque`, `transparent` ve `blurred` değerlerini destekler. macOS gerçek blur'u `NSVisualEffectView` ile, Windows composition/DWM ile, Wayland ise compositor blur protokolü ile uygular. Destek olmadığında `Blurred` transparan gibi davranabilir. Root UI opak çizdiğinde blur görünmez kalır.
+**Bulanıklık yönetiminin işletim sistemine göre uygulanması.** Pencere açılırken veya tema değiştiğinde `window.set_background_appearance(...)` çağrılır. Zed tema akışı `opaque`, `transparent` ve `blurred` değerlerini destekler. macOS gerçek bulanıklığı `NSVisualEffectView` ile, Windows composition/DWM ile, Wayland ise compositor bulanıklık protokolü ile uygular. Destek olmadığında `Blurred` saydam gibi davranabilir. Root UI opak çizdiğinde bulanıklık görünmez kalır.
 
 **Platform farklarının soyutlanacağı yer.** Davranış pencere ile ilgiliyse GPUI `Platform` ve `PlatformWindow` katmanına bağlanır. Zed UI görünümüyle ilgiliyse `PlatformStyle::platform()` ve `platform_title_bar` bileşenleri kullanılır. Ayar farkı gerekiyorsa `settings_content` şeması ve `settings` dönüşümleri devreye girer.
 
@@ -217,8 +217,8 @@ Aşağıdaki liste, rehberde anlatılan kavramların kodda hangi dosyada bulundu
 - Pencere açma API'si: `crates/gpui/src/app.rs::open_window`
 - Pencere seçenekleri: `crates/gpui/src/platform.rs::WindowOptions`
 - Platform penceresi sözleşmesi: `crates/gpui/src/platform.rs::PlatformWindow`
-- Pencere wrapper metotları: `crates/gpui/src/window.rs`
-- Element ve render trait'leri: `crates/gpui/src/element.rs`, `view.rs`
+- Pencere sarmalayıcı metotları: `crates/gpui/src/window.rs`
+- Element ve çizim trait'leri: `crates/gpui/src/element.rs`, `view.rs`
 - Style fluent API: `crates/gpui/src/styled.rs`
 - Interactivity fluent API: `crates/gpui/src/elements/div.rs`
 - Platform seçimi: `crates/gpui_platform/src/gpui_platform.rs`
@@ -227,11 +227,11 @@ Aşağıdaki liste, rehberde anlatılan kavramların kodda hangi dosyada bulundu
 - Linux Wayland davranışı: `crates/gpui_linux/src/linux/wayland/window.rs`
 - Linux X11 davranışı: `crates/gpui_linux/src/linux/x11/window.rs`
 - Zed ana window options: `crates/zed/src/zed.rs::build_window_options`
-- Zed platform titlebar: `crates/platform_title_bar/src/platform_title_bar.rs`
-- Linux controls: `crates/platform_title_bar/src/platforms/platform_linux.rs`
-- Windows controls: `crates/platform_title_bar/src/platforms/platform_windows.rs`
-- Workspace client decoration: `crates/workspace/src/workspace.rs::client_side_decorations`
-- Zed titlebar composition: `crates/title_bar/src/title_bar.rs`
-- Theme background appearance: `crates/theme/src/theme.rs`, `crates/theme_settings/src/theme_settings.rs`, `crates/settings/src/content_into_gpui.rs`
-- UI component export listesi: `crates/ui/src/components.rs`
+- Zed platform başlık çubuğu: `crates/platform_title_bar/src/platform_title_bar.rs`
+- Linux kontroller: `crates/platform_title_bar/src/platforms/platform_linux.rs`
+- Windows kontroller: `crates/platform_title_bar/src/platforms/platform_windows.rs`
+- Workspace istemci süslemesi: `crates/workspace/src/workspace.rs::client_side_decorations`
+- Zed başlık çubuğu kompozisyonu: `crates/title_bar/src/title_bar.rs`
+- Tema arka plan görünüşü: `crates/theme/src/theme.rs`, `crates/theme_settings/src/theme_settings.rs`, `crates/settings/src/content_into_gpui.rs`
+- UI bileşen dışa aktarım listesi: `crates/ui/src/components.rs`
 - UI input: `crates/ui_input/src/ui_input.rs`, `input_field.rs`
